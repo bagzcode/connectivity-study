@@ -1658,7 +1658,7 @@
                     .on("click", function(JVDvalueForFilter)
                     {
                         var rectselected = d3.select(this);
-                        JKT_rect_onclick(rectselected,JVDvalueForFilter);
+                        JKTFS_rect_onclick(rectselected,JVDvalueForFilter);
                     })
                     .on("mouseover", function(d)
                     {
@@ -2885,6 +2885,84 @@
                     });
         }
 
+        function JKTFS_rect_onclick(sel_this,d)
+        {
+
+            //returned all circles default colour
+            gjktFS.selectAll("rect").style("fill", "black")
+            JV_unselected_state(d)
+
+            /* generate select-self SD position and Bubble text */
+            sel_this.style("fill", "orange");
+
+            d3.selectAll("#c_id").remove();
+            d3.selectAll("#line_id").remove();
+            //if (connectionmenu[0] == "Line")
+            //{
+                var dotrect = projectionFS(d.location);
+                startpoint = [dotrect[0]+5,dotrect[1]+5];
+                //generateCentralDistrict(this,gjktFS)
+            //}
+
+            target.select("#daerah").text("DESTINATION LBM :"+d.name);
+
+            //Show tooltip
+            //d3.select("#tooltip").classed("hidden", false);
+
+            var totalreceive = 0;
+            /* generate Legend */
+            JVJKT_legend_set("JKT");
+
+            /* generate table info */
+            getInfoOrifromDest(d,"lbm")
+            var datamovjakLBMconvert = DataConverter2(datamovjakLBM,"dest_to_ori","lbm");
+            var datamovjakLBMconvertaddtot = addTotalField(datamovjakLBMconvert);
+            var totalreceiveLBM = addTotalSendOrReceive(datamovjakLBMconvert);
+            target.select("#info").text("Total weekly from All Origins (detail below) : "+totalreceiveLBM+" species");
+            d3.select("#ljkt1R").text(totalreceiveLBM+" species");
+            //var JakTable = tabulate2(datamovjakLBMconvertaddtot);
+
+            minmaxvaljvLBM = getMaxTot(datamovjakLBMconvertaddtot)
+            deviderLegend(minmaxvaljvLBM,"JV")
+
+			//get the origin cities based on selected destination
+			var selecteddata = getDistrictBasedOnMarketCode(d);
+			var oricityLBM = getOriginCity(selecteddata,"lbm");
+
+			//generate all selected origin city on Java Map
+			dt_resLBM = dt(jakFSjson,oricityLBM);
+console.log(dt_resLBM)
+            //added total value to the data
+            for (var i = 0; i < dt_resLBM.length; i++)
+            {
+                for (var j = 0; j < datamovjakLBMconvertaddtot.length; j++)
+                {
+                    if (dt_resLBM[i].properties.KAB_KOTA == datamovjakLBMconvertaddtot[j].ori)
+                    {
+                        dt_resLBM[i].properties.total = datamovjakLBMconvertaddtot[j].total
+                    }
+                }
+            }
+
+            map3.selectAll("path")
+                .data(dt_resLBM, function(d)
+                {
+                    return d.properties.OBJECTID;
+                })
+                .style("fill", setJavColorSDLBM)
+                .attr("stroke-width", 2)
+                .each(function(d,i)
+                    {
+                        //if (connectionmenu[0] == "Line")
+                        //{
+                            endpoint[i] = getCentroid(d3.select(this))
+                            generateCentralDistrict(endpoint[i],gjktFS)
+                            drawlinerectFS(startpoint,endpoint[i],"black")
+                        //}
+                    });
+            
+        }
+        
         function JKT_rect_onclick(sel_this,d)
         {
 
@@ -2924,8 +3002,7 @@
             minmaxvaljvLBM = getMaxTot(datamovjakLBMconvertaddtot)
             deviderLegend(minmaxvaljvLBM,"JV")
 
-            if (typeof JVForFilter != 'undefined')
-            {
+            
                 //get the origin cities based on selected destination
                 var selecteddata = getDistrictBasedOnMarketCode(d);
                 var oricityLBM = getOriginCity(selecteddata,"lbm");
@@ -2961,7 +3038,7 @@
                             drawlineDest2Ori(startpoint,endpoint[i],"black")
                         }
                     });
-            }
+            
         }
 
         function JV_path_onclick()
@@ -3637,6 +3714,18 @@
                                 .attr("r", 5);
         }
 
+        function drawlinerectFS(startpoint,endpoint,color)
+        {
+            var circle = canvas.append("line")
+                                .attr("id","line_id")
+                                .attr("x1", startpoint[0])
+                                .attr("y1", startpoint[1])
+                                .attr("x2", endpoint[0])
+                                .attr("y2", endpoint[1])
+                                .attr("stroke-width", 2)
+                                .attr("stroke", color);
+        }
+        
         function drawlineDest2Ori(startpoint,endpoint,color)
         {
             var circle = canvas.append("line")
@@ -3683,7 +3772,7 @@
         d3.json("jakarta.json", function(json) {
             jakFSjson = json;
             FSMapJKT(json);
-            lbmextraction(projectionFS, gjktFS, "orange")//setJktColorSDLBM)
+            lbmextraction(projectionFS, gjktFS, "black")//setJktColorSDLBM)
             $('#cbf1a1').prop('checked', true);
         });
 
@@ -3730,7 +3819,7 @@
             d3.json("jakarta.json", function(json) {
                 jakFSjson = json;
                 FSMapJKT(json);
-                lbmextraction(projectionFS, gjktFS, "orange")//setJktColorSDLBM)
+                lbmextraction(projectionFS, gjktFS, "black")//setJktColorSDLBM)
                 $('#cbf1a1').prop('checked', true);
             });
             
@@ -3739,13 +3828,13 @@
         $('#sCYSDinJKT').click(function () 
         {
             gjktFS.selectAll("circle").remove();
-            lbmextraction(projectionFS, gjktFS, "orange")//setJktColorSDLBM)
+            lbmextraction(projectionFS, gjktFS, "black")//setJktColorSDLBM)
             $('.cbf1a1').prop('checked', true);
         });
         $('#sLBMinJKT').click(function () 
         {
             gjktFS.selectAll("rect").remove();
-            subdistrictextraction(projectionFS, gjktFS, "orange")//setJktColorSDLBM)
+            subdistrictextraction(projectionFS, gjktFS, "black")//setJktColorSDLBM)
             $('#cbf1b1').prop('checked', true);
         });
         

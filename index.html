@@ -939,7 +939,7 @@
             }
             else if (selected == "lbm")
             {
-                var areaselected = d.marketCode;
+                var areaselected = d.code;
 
                 for (var i = 0; i < data.length; i++)
                 {
@@ -1007,7 +1007,7 @@
         {
             var dist = [];
             var n = 0;
-            var lbmCodeSelected = d.marketCode;
+            var lbmCodeSelected = d.code;
 
             for (var i = 0; i < data.length; i++)
             {
@@ -1067,7 +1067,7 @@
             }
             else if (selected == "lbm")
             {
-                areaselected = d.marketCode;
+                areaselected = d.code;
 
                 //return data with selected origin selection
                 var databasedonorigin = data.filter(function(d)
@@ -1151,6 +1151,7 @@
                         })
                     .entries(databasedonorigin)
                 datamovjavLBM=datafilterbydistrictandspecies;
+//console.log(datamovjavLBM)
             }
 
         }
@@ -1229,7 +1230,7 @@
         {
             //Get data from CSV file
             //The d3.csv() function does both the loading and the parsing without giving you a chance to intervene so we need to do this
-            d3.xhr('Movement.csv').get(function (err, response)
+            d3.xhr('MOVEMENT.csv').get(function (err, response)
             {
                 // to delete the first row and get the header
                 var dirtyCSV = response.responseText;
@@ -1264,7 +1265,7 @@
                     {
                         var coordinates = [0, 0];
                             coordinates = d3.mouse(this);
-console.log(coordinates)
+
                         var target2 = d3.select("#tooltip2")
                             .style("left", coordinates[0] + "px")
                             .style("top", coordinates[1] + (2*margin) + "px");
@@ -1620,13 +1621,19 @@ console.log(coordinates)
                 countByCity[destination] = (countByCity[destination] || 0) + 1;
             });
 
-            d3.csv("dest2lbm.csv", function(lbms)
-            {
+            d3.csv("DESTINATION.csv", function(lbmss)
+			{
+				var lbms = lbmss.filter(function(dat) 
+							{
+								return dat.type == "LBM"
+							});
 
                 lbms = lbms.filter(function(lbm)
-                {
-                    if (countByCity[lbm.marketCode])
+                {                   
+    
+                    if (countByCity[lbm.code])
                     {
+                        
                         var Lat = (-1*lbm.LS_Coord_Deg) - (+lbm.LS_Coord_Min/100),
                         Long = (1*lbm.BT_Coord_Deg) + (+lbm.BT_Coord_Min/100),
                         locationlbm = [+Long, +Lat];
@@ -1655,9 +1662,9 @@ console.log(coordinates)
                     })
                     .on("mouseover", function(d)
                     {
-                        var coordinates = [0, 0];
-                            coordinates = d3.mouse(this);
-console.log(d.location[0])
+                        var coordinates = proj(d.location);
+                            
+
                         var target2 = d3.select("#tooltip2")
                             .style("left", coordinates[0] + "px")
                             .style("top", coordinates[1] + "px");
@@ -1692,16 +1699,16 @@ console.log(d.location[0])
                 countByCity[destination] = (countByCity[destination] || 0) + 1;
             });
 
-            d3.csv("dest1dki.csv", function(sds)
+            d3.csv("DESTINATION.csv", function(sds)
             {
                 // Only consider cities with at least one deliver.
                 sds = sds.filter(function(sd)
                 {
 
-                    if (countByCity[sd.subdistrict])
+                    if (countByCity[sd.sub_district] && sd.type == "CY")
                     {
-                        var Lat = (-1*sd.gps_north_degree) - (+sd.gps_north_minute/100),
-                        Long = (1*sd.gps_east_degree) + (+sd.gps_east_minute/100),
+                        var Lat = (-1*sd.LS_Coord_Deg) - (+sd.LS_Coord_Min/100),
+                        Long = (1*sd.BT_Coord_Deg) + (+sd.BT_Coord_Min/100),
                         location = [+Long, +Lat];
                         sd.location = location;
                         locationByCity[sd.subdistrict] = location;
@@ -1727,12 +1734,11 @@ console.log(d.location[0])
                 })
                 .on("mouseover", function(d)
                 {
-                    var coordinates = [0, 0];
-                        coordinates = d3.mouse(this);
+                    var coordinates = proj(d.location);
 
                     var target2 = d3.select("#tooltip2")
-                        .style("left", coordinates[0] + (7*margin) + "px")
-                        .style("top", coordinates[1] + (7*margin) + "px");
+                        .style("left", coordinates[0]  + "px")
+                        .style("top", coordinates[1]  + "px");
 
                     target2.select("#daerah").text("CY_SubDistrict : "+d.subdistrict);
 
@@ -1822,26 +1828,6 @@ console.log(d.location[0])
         }
 
         //added title and other information for the interfaces
-        function titleinterface()
-        {
-            svg.append("svg:text")
-                .classed("title", true)
-                .attr("text-anchor", "start")
-                .attr("x", 1.5*margin)
-                .attr("y", 1*margin)
-                .text("Movement Tool: Connections of Collectors, Live Bird Markets and district of origin for live birds traded in JABODETABEK ")
-                .attr("width", jktw);
-            svg.append("svg:text")
-                .attr("text-anchor", "start")
-                .attr("y", height-5)
-                .text("Spreading birds data 2015");
-            svg.append("svg:text")
-                .attr("text-anchor", "end")
-                .attr("x", width)
-                .attr("y", height-5)
-                .text("@Urremote.com 2015");
-        }
-
         //create legend bar
         function legendinJava()
         {
@@ -2055,7 +2041,7 @@ console.log(d.location[0])
             var dispatch = d3.dispatch("load", "originschange");
             var dtddm1 = ["District"];
 
-            d3.xhr("Movement.csv").get(function ()
+            d3.xhr("MOVEMENT.csv").get(function ()
             {
                 var dtddm1ById = d3.map();
                 dtddm1.forEach(function (d)
@@ -2114,7 +2100,7 @@ console.log(d.location[0])
             var dispatch = d3.dispatch("load2", "collectorsschange");
             var dtddm2 = ["District","SubDistrict","LBM"];
 
-            d3.xhr("Movement.csv").get(function ()
+            d3.xhr("MOVEMENT.csv").get(function ()
             {
                 var dtddm2ById = d3.map();
                 dtddm2.forEach(function (d)
@@ -2186,7 +2172,7 @@ console.log(d.location[0])
             var dispatch = d3.dispatch("load3", "destinationschange");
             var dtddm3 = ["District","SubDistrict", "LBM"];
 
-            d3.xhr("Movement.csv").get(function ()
+            d3.xhr("MOVEMENT.csv").get(function ()
             {
                 var dtddm3ById = d3.map();
                 dtddm3.forEach(function (d)
@@ -2257,7 +2243,7 @@ console.log(d.location[0])
             var dispatch = d3.dispatch("load4", "specieschange");
             //var ALL = {species:"All Species"};
 
-            d3.xhr('Movement.csv').get(function (err, response)
+            d3.xhr('MOVEMENT.csv').get(function (err, response)
             {
                 // to delete the first row and get the header
                 var dirtyCSV = response.responseText;
@@ -2351,7 +2337,7 @@ console.log(d.location[0])
             var dispatch = d3.dispatch("load5", "connectionschange");
             var dtddm5 = ["Color", "Line", "Size"];
 
-            d3.xhr("Movement.csv").get(function ()
+            d3.xhr("MOVEMENT.csv").get(function ()
             {
                 var dtddm5ById = d3.map();
                 dtddm5.forEach(function (d)
@@ -2506,7 +2492,7 @@ console.log(d.location[0])
         //Store original data for reset function
         function datdum()
         {
-            d3.xhr('Movement.csv').get(function (err, response)
+            d3.xhr('MOVEMENT.csv').get(function (err, response)
             {
                 //if (error) throw error;
                 var dirtyCSV = response.responseText;
@@ -3032,8 +3018,9 @@ console.log(d.location[0])
                 var datamovjavconvertLBM = DataConverter2(datamovjavLBM,"ori_to_dest","lbm");
                 var datamovjavconvertaddtotLBM = addTotalField(datamovjavconvertLBM);
                 totalsendLBM = addTotalSendOrReceive(dt_lbm);
+    //console.log(datamovjavLBM)
             }
-            else if (destinationmenu[0] == "SubDistrict" )
+            else if (destinationmenu[1] == "SubDistrict" )
             {
                 getInfoDestfromOri(JVDvalueForFilter,"subdistrict");
                 var datamovjavconvertSD = DataConverter2(datamovjavSD,"ori_to_dest","subdistrict");
@@ -3050,22 +3037,26 @@ console.log(d.location[0])
                 var datamovjavconvertaddtotLBM = addTotalField(datamovjavconvertLBM);
                 totalsendLBM = addTotalSendOrReceive(dt_lbm);
             }
-            else if (destinationmenu[0] == "LBM")
+            else if (destinationmenu[1] == "LBM")
             {
                 getInfoDestfromOri(JVDvalueForFilter,"lbm");
                 var datamovjavconvertLBM = DataConverter2(datamovjavLBM,"ori_to_dest","lbm");
                 var datamovjavconvertaddtotLBM = addTotalField(datamovjavconvertLBM);
 
                 //convert cy_id_new into LBM name
-                d3.csv("dest2lbm.csv", function(lbms)
-                {
+                d3.csv("DESTINATION.csv", function(lbmss)
+				{
+					var lbms = lbmss.filter(function(dat) 
+								{
+									return dat.type == "LBM"
+								});
                     var dt_lbm = [];
                     var n = 0;
                     for (var i = 0; i < lbms.length; i++)
                     {
                         for (var j = 0; j < datamovjavconvertaddtotLBM.length; j++)
                         {
-                            if(lbms[i].marketCode == datamovjavconvertaddtotLBM[j].dest)
+                            if(lbms[i].code == datamovjavconvertaddtotLBM[j].dest)
                             {
                                 dt_lbm[n] = datamovjavconvertaddtotLBM[j];
                                 dt_lbm[n].dest = lbms[i].name
@@ -3073,6 +3064,7 @@ console.log(d.location[0])
                             }
                         }
                     }
+    
                     //var JavTable = tabulate2(dt_lbm);
                     minmaxvaljkt = getMaxTot(dt_lbm);
                     deviderLegend(minmaxvaljkt,"JKT")
@@ -3122,8 +3114,12 @@ console.log(d.location[0])
                 var destsd = getDestCity(JVDvalueForFilter, "subdistrict");
                 var dtsd = function(datassd)
                 {
-                    d3.csv("dest1dki.csv", function(sds)
+                    d3.csv("DESTINATION.csv", function(sdss)
                     {
+                        var sds = sdss.filter(function(dat) 
+									{
+										return dat.type == "CY"
+									});
                         var result = [];
                         var n = 0;
                         var possd = [];
@@ -3133,12 +3129,12 @@ console.log(d.location[0])
                             //Find the corresponding state inside the GeoJSON
                             for (var j = 0; j < sds.length; j++)
                             {
-                                var jsonState = sds[j].subdistrict;
+                                var jsonState = sds[j].sub_district;
                                 if (dataState == jsonState )
                                 {
                                     result[n] = sds[j];
-                                    var Lat = (-1*sds[j].gps_north_degree) - (+sds[j].gps_north_minute/100),
-                                    Long = (1*sds[j].gps_east_degree) + (+sds[j].gps_east_minute/100),
+                                    var Lat = (-1*sds[j].LS_Coord_Deg) - (+sds[j].LS_Coord_Min/100),
+                                    Long = (1*sds[j].BT_Coord_Deg) + (+sds[j].BT_Coord_Min/100),
                                     location = [+Long, +Lat];
                                     sds[j].location = location;
                                     possd.push(projection(location));
@@ -3183,12 +3179,11 @@ console.log(d.location[0])
                         })
                         .on("mouseover", function(d)
                         {
-                            var coordinates = [0, 0];
-                                coordinates = d3.mouse(this);
+                            var coordinates = proj(d.location);
 
                             var target2 = d3.select("#tooltip2")
-                                .style("left", coordinates[0] + (7*margin) + "px")
-                                .style("top", coordinates[1] + (7*margin) + "px");
+                                .style("left", coordinates[0]  + "px")
+                                .style("top", coordinates[1]  + "px");
 
                             target2.select("#daerah").text("CY_SubDistrict : "+d.subdistrict);
 
@@ -3207,8 +3202,12 @@ console.log(d.location[0])
                 var destlbm = getDestCity(JVDvalueForFilter, "lbm");
                 var dtlbm = function(dataslbm)
                 {
-                    d3.csv("dest2lbm.csv", function(lbms)
+                    d3.csv("DESTINATION.csv", function(lbmss)
                     {
+                        var lbms = lbmss.filter(function(dat) 
+									{
+										return dat.type == "LBM"
+									});
                         var result = [];
                         var n = 0;
                         var poslbm = [];
@@ -3217,7 +3216,7 @@ console.log(d.location[0])
                             var dataState = dataslbm[i];
                             for (var j = 0; j < lbms.length; j++)
                             {
-                                var jsonState = lbms[j].marketCode;
+                                var jsonState = lbms[j].code;
                                 if (dataState == jsonState )
                                 {
                                     result[n] = lbms[j];
@@ -3266,12 +3265,11 @@ console.log(d.location[0])
                         })
                         .on("mouseover", function(d)
                         {
-                            var coordinates = [0, 0];
-                                coordinates = d3.mouse(this);
+                            var coordinates = proj(d.location);
 
                             var target2 = d3.select("#tooltip2")
-                                .style("left", coordinates[0] + (7*margin) +"px")
-                                .style("top", coordinates[1] + (7*margin) + "px");
+                                .style("left", coordinates[0] +"px")
+                                .style("top", coordinates[1] + "px");
 
                             target2.select("#daerah").text("LBM : "+d.name);
 
@@ -3410,15 +3408,19 @@ console.log(d.location[0])
                 var datamovjakFSconvertaddtotLBM = addTotalField(datamovjakFSconvertLBM);
 
                 //convert cy_id_new into LBM name
-                d3.csv("dest2lbm.csv", function(lbms)
-                {
+                d3.csv("DESTINATION.csv", function(lbmss)
+				{
+					var lbms = lbmss.filter(function(dat) 
+								{
+									return dat.type == "LBM"
+								});
                     var dt_lbm = [];
                     var n = 0;
                     for (var i = 0; i < lbms.length; i++)
                     {
                         for (var j = 0; j < datamovjakFSconvertaddtotLBM.length; j++)
                         {
-                            if(lbms[i].marketCode == datamovjakFSconvertaddtotLBM[j].dest)
+                            if(lbms[i].code == datamovjakFSconvertaddtotLBM[j].dest)
                             {
                                 dt_lbm[n] = datamovjakFSconvertaddtotLBM[j];
                                 dt_lbm[n].dest = lbms[i].name
@@ -3441,8 +3443,12 @@ console.log(d.location[0])
                 var destsd = getDestCity(JKTFSDvalueForFilter, "subdistrict");
                 var dtsd = function(datassd)
                 {
-                    d3.csv("dest1dki.csv", function(sds)
+                    d3.csv("DESTINATION.csv", function(sdss)
                     {
+                        var sds = sdss.filter(function(dat) 
+									{
+										return dat.type == "CY"
+									});
                         var result = [];
                         var n = 0;
                         var possd = [];
@@ -3456,8 +3462,8 @@ console.log(d.location[0])
                                 if (dataState == jsonState )
                                 {
                                     result[n] = sds[j];
-                                    var Lat = (-1*sds[j].gps_north_degree) - (+sds[j].gps_north_minute/100),
-                                    Long = (1*sds[j].gps_east_degree) + (+sds[j].gps_east_minute/100),
+                                    var Lat = (-1*sds[j].LS_Coord_Deg) - (+sds[j].LS_Coord_Min/100),
+                                    Long = (1*sds[j].BT_Coord_Deg) + (+sds[j].BT_Coord_Min/100),
                                     location = [+Long, +Lat];
                                     sds[j].location = location;
                                     possd.push(projectionFS(location));
@@ -3502,12 +3508,11 @@ console.log(d.location[0])
                         })
                         .on("mouseover", function(d)
                         {
-                            var coordinates = [0, 0];
-                                coordinates = d3.mouse(this);
+                            var coordinates = proj(d.location);
 
                             var target2 = d3.select("#tooltip2")
-                                .style("left", coordinates[0] + (7*margin) + "px")
-                                .style("top", coordinates[1] + (7*margin) + "px");
+                                .style("left", coordinates[0] + "px")
+                                .style("top", coordinates[1] + "px");
 
                             target2.select("#daerah").text("CY_subDistrict : "+d.subdistrict);
 
@@ -3526,8 +3531,12 @@ console.log(d.location[0])
                 var destlbm = getDestCity(JKTFSDvalueForFilter, "lbm");
                 var dtlbm = function(dataslbm)
                 {
-                    d3.csv("dest2lbm.csv", function(lbms)
+                    d3.csv("DESTINATION.csv", function(lbmss)
                     {
+                        var lbms = lbmss.filter(function(dat) 
+									{
+										return dat.type == "LBM"
+									});
                         var result = [];
                         var n = 0;
                         var poslbm = [];
@@ -3536,7 +3545,7 @@ console.log(d.location[0])
                             var dataState = dataslbm[i];
                             for (var j = 0; j < lbms.length; j++)
                             {
-                                var jsonState = lbms[j].marketCode;
+                                var jsonState = lbms[j].code;
                                 if (dataState == jsonState )
                                 {
                                     result[n] = lbms[j];
@@ -3585,12 +3594,11 @@ console.log(d.location[0])
                         })
                         .on("mouseover", function(d)
                         {
-                            var coordinates = [0, 0];
-                                coordinates = d3.mouse(this);
+                            var coordinates = proj(d.location);
 
                             var target2 = d3.select("#tooltip2")
-                                .style("left", coordinates[0] + (7*margin) +"px")
-                                .style("top", coordinates[1] + (7*margin) + "px");
+                                .style("left", coordinates[0] +"px")
+                                .style("top", coordinates[1] + "px");
 
                             target2.select("#daerah").text("LBM : "+d.name);
 
@@ -3652,298 +3660,7 @@ console.log(d.location[0])
                                 .attr("stroke-width", 2)
                                 .attr("stroke", color);
         }
-
-        function displayoption ()
-        {
-            var checkbox = svg.append("foreignObject")
-                                .attr("x", margin)
-                                .attr("y", 5*margin)
-                                .attr("width", 150)
-                                .attr("height",100)
-                                .append("xhtml:body")
-                                .append("div")
-                                .attr("id", "op1")
-                                .text("OPTIONS  : ")
-                                .append("input")
-                                .attr("type","checkbox")
-                                .attr("id", "cb1")
-                                .on("change", function ()
-                                {
-                                    if (d3.select(this).node().checked)
-                                    {
-                                        d3.select("#gjkt_rect").classed("hidden", true);
-                                        canvas.selectAll("line").remove();
-                                        map.selectAll("circle").remove();
-                                        map.selectAll("path").remove();
-                                        d3.select("#gjw_rect").classed("hidden", true);
-                                        map2.selectAll("circle").remove();
-                                        map2.selectAll("path").remove();
-                                        d3.select("#gjktFS_rect").classed("hidden", false);
-
-                                        //added Full jabodetabek map
-                                        d3.json("jakarta.json", function(json) {
-                                            jakFSjson = json;
-                                            FSMapJKT(json);
-                                        });
-
-                                        if(d3.select("#f1").empty())
-                                        {
-                                            filter1();
-                                        }
-                                        d3.select("#f1").classed("hidden", false);
-                                        d3.select("#f2").classed("hidden", true);
-                                        d3.select("#f3").classed("hidden", true);
-
-                                    }
-                                    else
-                                    {
-                                        d3.select("#gjktFS_rect").classed("hidden", true);
-                                        canvas.selectAll("line").remove();
-                                        map3.selectAll("circle").remove();
-                                        map3.selectAll("path").remove();
-                                        d3.select("#gjkt_rect").classed("hidden", false);
-                                        d3.select("#gjw_rect").classed("hidden", false);
-
-                                        //added jabodetabek map
-                                        d3.json("jakarta.json", function(json) {
-                                            jakjson = json;
-                                            updateMapJKT(json);
-                                        });
-
-                                        // generate SVG for second Geojson MAP (java island)
-                                        d3.json("indonesia_districts_java_only.json", function(json) {
-                                            javjson = json;
-                                            updateMapJAVA(json);
-                                        });
-
-                                        if(d3.select("#f2").empty())
-                                        {
-                                            filter2();
-                                            filter3();
-                                        }
-                                        d3.select("#f1").classed("hidden", true);
-                                        d3.select("#f2").classed("hidden", false);
-                                        d3.select("#f3").classed("hidden", false);
-                                    }
-
-                                });
-        }
-        var widthfilter = 425;
-        function filter1()
-        {
-            var filter1a = svg.append("foreignObject")
-                                .attr("x", jktw+margin)
-                                .attr("y", 6*margin)
-                                .attr("width", widthfilter)
-                                .attr("height",1000)
-
-            var filter1adiv = filter1a.append("xhtml:body")
-                                    .append("div")
-                                    .attr("id", "f1")
-
-            filter1adiv.html("<fieldset class=group>"
-                                +"<legend>Search Markets and Collector in JABODETABEK</legend> "
-                                +"<fieldset class=group>"
-                                +"<legend>Search Collectors connected to a Market</legend> "
-                                +"</br></br>"
-                                +"<input type=checkbox id=f1cb1 class=tick/>"
-                                +"By Name or Number :"
-                                +"<input type=text id=f1tx1 class=tick/>"
-                                +"</br>"
-                                +"<input type=checkbox id=f1cb2 class=tick/>"
-                                +"All markets in sub-district :"
-                                +"<input type=text id=f1tx1 class=tick/>"
-                                +"</br>"
-                                +"<input type=checkbox id=f1cb3 class=tick/>"
-                                +"All markets in district :"
-                                +"<input type=text id=f1tx1 class=tick/>"
-                                +"</br></br>"
-                                +"<input type=checkbox id=f1spcb1a class=tick/>"
-                                +"Ayam Kampung "
-                                +"<input type=checkbox id=f1spcb2a class=tick/>"
-                                +"Broiler "
-                                +"<input type=checkbox id=f1spcb3a class=tick/>"
-                                +"Duck "
-                                +"<input type=checkbox id=f1spcb4a class=tick/>"
-                                +"Layer "
-                                +"<input type=checkbox id=f1spcb5a class=tick/>"
-                                +"All "
-                                +"</br></br>"
-                                +"</fieldset> "
-                                +"</br></br>"
-                                +"<fieldset class=group>"
-                                +"<legend>Search Markets connected to a Collector</legend> "
-                                +"</br></br>"
-                                +"<input type=checkbox id=f1cb1 class=tick/>"
-                                +"By Name or Number :"
-                                +"<input type=text id=f1tx1 class=tick/>"
-                                +"</br>"
-                                +"<input type=checkbox id=f1cb2 class=tick/>"
-                                +"All markets in sub-district :"
-                                +"<input type=text id=f1tx1 class=tick/>"
-                                +"</br>"
-                                +"<input type=checkbox id=f1cb3 class=tick/>"
-                                +"All markets in district :"
-                                +"<input type=text id=f1tx1 class=tick/>"
-                                +"</br></br>"
-                                +"<input type=checkbox id=f1spcb1b class=tick/>"
-                                +"Ayam Kampung "
-                                +"<input type=checkbox id=f1spcb2b class=tick/>"
-                                +"Broiler "
-                                +"<input type=checkbox id=f1spcb3b class=tick/>"
-                                +"Duck "
-                                +"<input type=checkbox id=f1spcb4b class=tick/>"
-                                +"Layer "
-                                +"<input type=checkbox id=f1spcb5b class=tick/>"
-                                +"All "
-                                +"</br></br>"
-                                +"</fieldset> "
-                                +"</fieldset> ")
-            .on("click", function(d, i)
-            {
-                console.log(svg.select("#f1spcb5a").node().checked)
-                if (svg.select("#f1spcb5a").node().checked )
-                {
-                    svg.select("#f1spcb1a").node().checked = "true";
-                    svg.select("#f1spcb2a").node().checked = "true";
-                    svg.select("#f1spcb3a").node().checked = "true";
-                    svg.select("#f1spcb4a").node().checked = "true";
-                    svg.select("#f1spcb1b").node().checked = "true";
-                    svg.select("#f1spcb2b").node().checked = "true";
-                    svg.select("#f1spcb3b").node().checked = "true";
-                    svg.select("#f1spcb4b").node().checked = "true";
-                    svg.select("#f1spcb5b").node().checked = "true";
-                }
-
-            }) ;
-        }
-
-        function filter2()
-        {
-            var filter2a = svg.append("foreignObject")
-                                .attr("x", jktw+margin)
-                                .attr("y", 6*margin)
-                                .attr("width", widthfilter)
-                                .attr("height",1000)
-
-            var filter2adiv = filter2a.append("xhtml:body")
-                                    .append("div")
-                                    .attr("id", "f2")
-
-            filter2adiv.html("<fieldset class=group>"
-                                +"<legend>Search Poultry District of Origin of Poultry in Jakarta </legend> "
-                                +"<fieldset class=group>"
-                                +"<legend>Search Districts of poultry origin of Collectors </legend> "
-                                +"</br></br>"
-                                +"<input type=checkbox id=f1cb1 class=tick/>"
-                                +"By Name or Number :"
-                                +"<input type=text id=f1tx1 class=tick/>"
-                                +"</br>"
-                                +"<input type=checkbox id=f1cb2 class=tick/>"
-                                +"All markets in sub-district :"
-                                +"<input type=text id=f1tx1 class=tick/>"
-                                +"</br>"
-                                +"<input type=checkbox id=f1cb3 class=tick/>"
-                                +"All markets in district :"
-                                +"<input type=text id=f1tx1 class=tick/>"
-                                +"</br></br>"
-                                +"<input type=checkbox id=f1spcb1 class=tick/>"
-                                +"Ayam Kampung "
-                                +"<input type=checkbox id=f1spcb2 class=tick/>"
-                                +"Broiler "
-                                +"<input type=checkbox id=f1spcb3 class=tick/>"
-                                +"Duck "
-                                +"<input type=checkbox id=f1spcb4 class=tick/>"
-                                +"Layer "
-                                +"<input type=checkbox id=f1spcb5 class=tick/>"
-                                +"All "
-                                +"</br></br>"
-                                +"</fieldset> "
-                                +"</br></br>"
-                                +"<fieldset class=group>"
-                                +"<legend>Search Districts of poultry origin of Livebird markets*</legend> "
-                                +"</br></br>"
-                                +"<input type=checkbox id=f1cb1 class=tick/>"
-                                +"By Name or Number :"
-                                +"<input type=text id=f1tx1 class=tick/>"
-                                +"</br>"
-                                +"<input type=checkbox id=f1cb2 class=tick/>"
-                                +"All markets in sub-district :"
-                                +"<input type=text id=f1tx1 class=tick/>"
-                                +"</br>"
-                                +"<input type=checkbox id=f1cb3 class=tick/>"
-                                +"All markets in district :"
-                                +"<input type=text id=f1tx1 class=tick/>"
-                                +"</br></br>"
-                                +"<input type=checkbox id=f1spcb1 class=tick/>"
-                                +"Ayam Kampung "
-                                +"<input type=checkbox id=f1spcb2 class=tick/>"
-                                +"Broiler "
-                                +"<input type=checkbox id=f1spcb3 class=tick/>"
-                                +"Duck "
-                                +"<input type=checkbox id=f1spcb4 class=tick/>"
-                                +"Layer "
-                                +"<input type=checkbox id=f1spcb5 class=tick/>"
-                                +"All "
-                                +"</br></br>"
-                                +"* ONLY FOR POULTRY CONNECTED TO COLLECTORS IN JABODETABEK"
-                                +"</fieldset> "
-                                +"</fieldset> ")
-            .on("click", function(d, i)
-            {
-                console.log(svg.select("#f1cb1").node().checked)
-
-            }) ;
-        }
-
-        function filter3()
-        {
-            var filter3a = svg.append("foreignObject")
-                                .attr("x", jktw+margin)
-                                .attr("y", 27*margin)
-                                .attr("width", widthfilter)
-                                .attr("height",1000)
-
-            var filter3adiv = filter3a.append("xhtml:body")
-                                    .append("div")
-                                    .attr("id", "f3")
-
-            filter3adiv.html("<fieldset class=group>"
-                                +"<legend>Search Destination of birds from a district  </legend> "
-                                +"<fieldset class=group>"
-                                +"<legend>Search Destinations of birds district of origin </legend> "
-                                +"</br></br>"
-                                +"<input type=checkbox id=f1cb1 class=tick/>"
-                                +"Display only LBM destination :"
-                                +"<input type=text id=f1tx1 class=tick/>"
-                                +"</br>"
-                                +"<input type=checkbox id=f1cb2 class=tick/>"
-                                +"Display only collector destinations"
-                                +"</br>"
-                                +"<input type=checkbox id=f1cb3 class=tick/>"
-                                +"Display collector and LBM destination"
-                                +"</br></br>"
-                                +"<input type=checkbox id=f1spcb1 class=tick/>"
-                                +"Ayam Kampung "
-                                +"<input type=checkbox id=f1spcb2 class=tick/>"
-                                +"Broiler "
-                                +"<input type=checkbox id=f1spcb3 class=tick/>"
-                                +"Duck "
-                                +"<input type=checkbox id=f1spcb4 class=tick/>"
-                                +"Layer "
-                                +"<input type=checkbox id=f1spcb5 class=tick/>"
-                                +"All "
-                                +"</br></br>"
-                                +"</fieldset> "
-                                +"</br></br>"
-                                +"</fieldset> "
-                                +"</fieldset> ")
-            .on("click", function(d, i)
-            {
-                console.log(svg.select("#f1cb1").node().checked)
-
-            }) ;
-        }
+        
 
 /****************************************************************************************/
         //set the interface
@@ -3952,9 +3669,6 @@ console.log(d.location[0])
         getcsvdata();
         //keep original data to other variable
         datdum();
-
-        //added  title for the interface
-        //titleinterface()
 
         //added filter(s)
         //Filter1_Origins();
@@ -3965,13 +3679,6 @@ console.log(d.location[0])
 
         //displayoption();
 
-        //filter1()
-        //filter2()
-        //filter3()
-        //d3.select("#f1").classed("hidden", true);
-        //d3.select("#f2").classed("hidden", true);
-        //d3.select("#f3").classed("hidden", true);
-
         //added jabodetabek map
         d3.json("jakarta.json", function(json) {
             jakFSjson = json;
@@ -3981,7 +3688,7 @@ console.log(d.location[0])
         });
 
         // generate SVG for second Geojson MAP (java island)
-        //d3.json("indonesia_districts_java_only.json", function(json) {
+        //d3.json("java.json", function(json) {
         //    javjson = json;
         //    updateMapJAVA(json);
         //});
@@ -3998,10 +3705,8 @@ console.log(d.location[0])
 
 
 /****************************************************************************************/
-
-        $('#sLBMnCYSDinJKT').click(function () 
-        { /* perform action here */ 
-            d3.select("#gjkt_rect").classed("hidden", true);
+        function initState()
+        {
             canvas.selectAll("line").remove();
             gjkt.selectAll("circle").remove();
             gjkt.selectAll("rect").remove();
@@ -4012,6 +3717,12 @@ console.log(d.location[0])
             gjktFS.selectAll("circle").remove();
             gjktFS.selectAll("rect").remove();
             map3.selectAll("path").remove();
+        }
+        
+        $('#sLBMnCYSDinJKT').click(function () 
+        { /* perform action here */ 
+            initState()
+            d3.select("#gjkt_rect").classed("hidden", true);
             d3.select("#gjw_rect").classed("hidden", true);
             d3.select("#gjktFS_rect").classed("hidden", false);
 
@@ -4040,17 +3751,8 @@ console.log(d.location[0])
         
         $('#sORIinJKTJV').click(function () 
         { /* perform action here */ 
+            initState();
             d3.select("#gjktFS_rect").classed("hidden", true);
-            canvas.selectAll("line").remove();
-            gjkt.selectAll("circle").remove();
-            gjkt.selectAll("rect").remove();
-            map.selectAll("path").remove();
-            gjw.selectAll("circle").remove();
-            gjw.selectAll("rect").remove();
-            map2.selectAll("path").remove();
-            gjktFS.selectAll("circle").remove();
-            gjktFS.selectAll("rect").remove();
-            map3.selectAll("path").remove();
             d3.select("#gjkt_rect").classed("hidden", false);
             d3.select("#gjw_rect").classed("hidden", false);
 
@@ -4061,7 +3763,7 @@ console.log(d.location[0])
             });
 
             // generate SVG for second Geojson MAP (java island)
-            d3.json("indonesia_districts_java_only.json", function(json) {
+            d3.json("java.json", function(json) {
                 javjson = json;
                 updateMapJAVA(json);
             });
@@ -4070,17 +3772,8 @@ console.log(d.location[0])
         
         $('#sDESTinJKTJV').click(function () 
         { /* perform action here */ 
+            initState();
             d3.select("#gjktFS_rect").classed("hidden", true);
-            canvas.selectAll("line").remove();
-            gjkt.selectAll("circle").remove();
-            gjkt.selectAll("rect").remove();
-            map.selectAll("path").remove();
-            gjw.selectAll("circle").remove();
-            gjw.selectAll("rect").remove();
-            map2.selectAll("path").remove();
-            gjktFS.selectAll("circle").remove();
-            gjktFS.selectAll("rect").remove();
-            map3.selectAll("path").remove();
             d3.select("#gjkt_rect").classed("hidden", false);
             d3.select("#gjw_rect").classed("hidden", false);
 
@@ -4091,7 +3784,7 @@ console.log(d.location[0])
             });
 
             // generate SVG for second Geojson MAP (java island)
-            d3.json("indonesia_districts_java_only.json", function(json) {
+            d3.json("java.json", function(json) {
                 javjson = json;
                 updateMapJAVA(json);
             });

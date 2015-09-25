@@ -1251,7 +1251,9 @@
                     .style("stroke", "rgb(0,109,44)")
                     .on("click", function(d)
                     {
-                        //JVForFilter = (function () { return; })();
+                        JVForFilter = (function () { return; })();
+                        JKTForFilter = (function () { return; })();
+                        
                         JKTFSForFilter = d3.select(this);
                         JKTFSDvalueForFilter = d;
 
@@ -1262,7 +1264,7 @@
                     {
                         var coordinates = [0, 0];
                             coordinates = d3.mouse(this);
-
+console.log(coordinates)
                         var target2 = d3.select("#tooltip2")
                             .style("left", coordinates[0] + "px")
                             .style("top", coordinates[1] + (2*margin) + "px");
@@ -1655,7 +1657,7 @@
                     {
                         var coordinates = [0, 0];
                             coordinates = d3.mouse(this);
-console.log(coordinates)
+console.log(d.location[0])
                         var target2 = d3.select("#tooltip2")
                             .style("left", coordinates[0] + "px")
                             .style("top", coordinates[1] + "px");
@@ -2936,12 +2938,14 @@ console.log(coordinates)
             minmaxvaljvLBM = getMaxTot(datamovjakLBMconvertaddtot)
             deviderLegend(minmaxvaljvLBM,"JV")
 
-            //get the origin cities based on selected destination
-            var selecteddata = getDistrictBasedOnMarketCode(d);
-            var oricityLBM = getOriginCity(selecteddata,"lbm");
+            if (typeof JVForFilter != 'undefined')
+            {
+                //get the origin cities based on selected destination
+                var selecteddata = getDistrictBasedOnMarketCode(d);
+                var oricityLBM = getOriginCity(selecteddata,"lbm");
 
-            //generate all selected origin city on Java Map
-            dt_resLBM = dt(javjson,oricityLBM);
+                //generate all selected origin city on Java Map
+                dt_resLBM = dt(javjson,oricityLBM);
 
             //added total value to the data
             for (var i = 0; i < dt_resLBM.length; i++)
@@ -4067,11 +4071,14 @@ console.log(coordinates)
         { /* perform action here */ 
             d3.select("#gjktFS_rect").classed("hidden", true);
             canvas.selectAll("line").remove();
-            map.selectAll("circle").remove();
+            gjkt.selectAll("circle").remove();
+            gjkt.selectAll("rect").remove();
             map.selectAll("path").remove();
-            map2.selectAll("circle").remove();
+            gjw.selectAll("circle").remove();
+            gjw.selectAll("rect").remove();
             map2.selectAll("path").remove();
-            map3.selectAll("circle").remove();
+            gjktFS.selectAll("circle").remove();
+            gjktFS.selectAll("rect").remove();
             map3.selectAll("path").remove();
             d3.select("#gjkt_rect").classed("hidden", false);
             d3.select("#gjw_rect").classed("hidden", false);

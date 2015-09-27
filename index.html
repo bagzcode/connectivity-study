@@ -285,7 +285,7 @@
                   <div class="panel panel-success">
                     <div class="panel-heading" role="tab" id="heading_poultry_origin_of_collectors">
                       <h6 class="panel-title">
-                        <a role="button" data-toggle="collapse" data-parent="#sub_accordion_search_poultry" href="#collapse_poultry_origin_of_collectors" aria-expanded="true" aria-controls="collapse_poultry_origin_of_collectors">
+                        <a id="sCYSDinJKTJV" role="button" data-toggle="collapse" data-parent="#sub_accordion_search_poultry" href="#collapse_poultry_origin_of_collectors" aria-expanded="true" aria-controls="collapse_poultry_origin_of_collectors">
                           Search Districts of poultry origin of Collectors
                         </a>
                       </h6>
@@ -395,7 +395,7 @@
                   <div class="panel panel-success">
                     <div class="panel-heading" role="tab" id="heading_poultry_origin_of_livebirds_markets">
                       <h6 class="panel-title">
-                        <a role="button" data-toggle="collapse" data-parent="#sub_accordion_search_poultry" href="#collapse_poultry_origin_of_livebirds_markets" aria-expanded="true" aria-controls="collapse_poultry_origin_of_livebirds_markets">
+                        <a id="sLBMinJKTJV" role="button" data-toggle="collapse" data-parent="#sub_accordion_search_poultry" href="#collapse_poultry_origin_of_livebirds_markets" aria-expanded="true" aria-controls="collapse_poultry_origin_of_livebirds_markets">
                           Search Districts of poultry origin of Livebird markets*
                         </a>
                       </h6>
@@ -4720,6 +4720,14 @@
             gjktFS.selectAll("circle").remove();
             gjktFS.selectAll("rect").remove();
         
+            map.selectAll("path")
+                .style("fill", setNormalColor)
+                .attr("stroke-width", 1);
+                
+            map2.selectAll("path")
+                .style("fill", setNormalColor)
+                .attr("stroke-width", 1);
+                
             map3.selectAll("path")
                 .style("fill", setNormalColor)
                 .attr("stroke-width", 1);
@@ -4993,6 +5001,8 @@
             d3.json("jakarta.json", function(json) {
                 jakjson = json;
                 updateMapJKT(json);
+                entityextraction("LBM", projection, gjkt, "black")//setJktColorSDLBM)
+                $('#cbf2a1').prop('checked', true);
             });
 
             // generate SVG for second Geojson MAP (java island)
@@ -5002,6 +5012,64 @@
             });
 
         });
+        
+            //filter2sub1
+            $('#sCYSDinJKTJV').click(function () 
+            {
+                initStateWOPath();
+                entityextraction("LBM", projection, gjkt, "black")//setJktColorSDLBM)
+                $('#cbf2a1').prop('checked', true);
+                subactive = 1;
+            });
+        
+                //filter1sub1rb1
+                $('#cbf2a1').click(function ()
+                {
+                    initStateWOPath();
+                    entityextraction("LBM", projection, gjkt, "black")
+                });
+            
+                //filter1sub1rb2
+                $('#cbf2a2').click(function ()
+                {
+                    initStateWOPath();
+                    subdistrictextraction("LBM", projection, gjkt, "black")
+                });
+            
+                //filter1sub1rb3
+                $('#cbf2a3').click(function ()
+                {
+                    initStateWOPath();
+                });
+    
+            //filter1sub2
+            $('#sLBMinJKTJV').click(function () 
+            {
+                initStateWOPath();
+                entityextraction("CY", projection, gjkt, "blue")
+                $('#cbf2b1').prop('checked', true);
+                subactive = 2;
+            });
+                
+                //filter1sub2rb1
+                $('#cbf2b1').click(function ()
+                {
+                    initStateWOPath();
+                    entityextraction("CY", projection, gjkt, "blue")
+                });
+            
+                //filter1sub2rb2
+                $('#cbf2b2').click(function ()
+                {
+                    initStateWOPath();
+                    subdistrictextraction("CY", projection, gjkt, "blue")
+                });
+            
+                //filter1sub2rb3
+                $('#cbf2b3').click(function ()
+                {
+                    initStateWOPath();
+                });
     
         //filter3
         $('#sDESTinJKTJV').click(function () 

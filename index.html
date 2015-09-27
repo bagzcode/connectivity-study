@@ -654,6 +654,7 @@
 
     <div id="tooltip2" class="hidden">
         <p><strong><span id="daerah"></span></strong></p>
+        <p id="info"></p>
     </div>
 
     <script type="text/javascript">
@@ -819,13 +820,19 @@
             JKTForFilter,
             JKTDvalueForFilter,
             JKTFSForFilter,
-            JKTFSDvalueForFilter;;	//global variabel to pass value from selected origin to filter
+            JKTFSDvalueForFilter,
+            
+            rectgetselected,
+            Drectgetselected,
+            circlegetselected,
+            Dcirclegetselected;   //global variabel to pass value from selected origin to filter
 
         var target = d3.select("#tooltip")
                 .style("left", leftbuble+"px")
                 .style("top", topbuble+"px")
                 .style("width", widthbuble+"px")
                 .style("height", heightbuble+"px");
+        var target2 = d3.select("#tooltip2");
 
         var startpoint = [],
             endpoint = [];
@@ -968,6 +975,62 @@
             return unique_areaorigin;
 
         }
+        
+        var getDestinationCityFS = function (d,selected)
+        {
+            var areaorigin = [];
+            var n = 0;
+            if (selected == "district")
+            {
+                var areaselected = d.properties.KAB_KOTA;
+
+                for (var i = 0; i < data_out.length; i++)
+                {
+                    if (data_out[i].origin_district == areaselected)
+                    {
+                        areaorigin[n] = data_out[i].destination_district;
+                        n = n + 1;
+                        //break;
+                    }
+                }
+            }
+            else if (selected == "subdistrict")
+            {
+                var areaselected = d.sub_district;
+                for (var i = 0; i < data_out.length; i++)
+                {
+                    if (data_out[i].origin_sub_district == areaselected)
+                    {
+                        areaorigin[n] = data_out[i].destination_district;
+                        n = n + 1;
+                        //break;
+                    }
+                }
+            }
+            else if (selected == "lbm")
+            {
+                var areaselected = d.code;
+
+                for (var i = 0; i < data_out.length; i++)
+                {
+                    if (data_out[i].origin_code  == areaselected)
+                    {
+                        areaorigin[n] = data_out[i].destination_district;
+                        n = n + 1;
+                        //break;
+                    }
+                }
+            }
+
+
+            //get unique data
+            var unique_areaorigin = areaorigin.filter(function(item, pos)
+            {
+                return areaorigin.indexOf(item) == pos;
+            });
+            return unique_areaorigin;
+
+        }
     
         var getOriginCity = function (d,selected)
         {
@@ -1057,6 +1120,63 @@
                         areadest[n] = data_out[i].origin_district;
                         areasd[n] = data_out[i].origin_sub_district;
                         arealbm[n] = data_out[i].origin_code ;
+                        n = n + 1;
+                        //break;
+                    }
+                }
+            }
+            //get unique data
+            var unique_areadest = areadest.filter(function(item, pos)
+            {
+                return areadest.indexOf(item) == pos;
+            });
+
+            var unique_areasd = areasd.filter(function(item, pos)
+            {
+                return areasd.indexOf(item) == pos;
+            });
+
+            var unique_arealbm = arealbm.filter(function(item, pos)
+            {
+                return arealbm.indexOf(item) == pos;
+            });
+            if (type == "district"){return unique_areasd;}
+            if (type == "subdistrict"){return unique_areasd;}
+            if (type == "lbm"){return unique_arealbm;}
+        }
+        
+         var getOriCityFS = function (d,type)
+        {
+
+            var areadest = [];
+            var areasd = [];
+            var arealbm = [];
+            var n = 0;
+            if(type == "district")
+            {
+                var areaselected = d.properties.KAB_KOTA; 
+                for (var i = 0; i < data_out.length; i++)
+                {
+                    if (data_out[i].origin_district == areaselected)
+                    {
+                        areadest[n] = data_out[i].destination_district;
+                        areasd[n] = data_out[i].destination_sub_district;
+                        arealbm[n] = data_out[i].destination_code ;
+                        n = n + 1;
+                        //break;
+                    }
+                }
+            }
+            else
+            {
+                var areaselected = d.sub_district || d.code; 
+                for (var i = 0; i < data_out.length; i++)
+                {
+                    if (data_out[i].origin_code == areaselected || data_out[i].origin_sub_district == areaselected)
+                    {
+                        areadest[n] = data_out[i].destination_district;
+                        areasd[n] = data_out[i].destination_sub_district;
+                        arealbm[n] = data_out[i].destination_code ;
                         n = n + 1;
                         //break;
                     }
@@ -1197,6 +1317,71 @@
 
                 var datafilterbylbmandspecies = d3.nest()
                     .key(function(d){ return d.origin_district })
+                    .key(function(d){ return d.species_type })
+                    .rollup(function(d)
+                        {
+                            return d3.sum(d, function (g){ return g.weekly_volume});
+                        })
+                    .entries(databasedonorigin)
+                datamovjakLBM=datafilterbylbmandspecies;
+            }
+
+        }
+        
+        var getInfoDestfromOriFS = function (d,selected)
+        {
+            if (selected == "district")
+            {
+                areaselected = d.Name || d.properties.KAB_KOTA || d.properties.KABKOT;
+
+                //return data with selected origin selection
+                var databasedondest = data_out.filter(function(d)
+                    {
+                        return d.origin_district == areaselected && d.weekly_volume != 0;
+                    })
+
+                var datafilterbydistrictandspecies = d3.nest()
+                    .key(function(d){ return d.destination_district })
+                    .key(function(d){ return d.species_type })
+                    .rollup(function(d)
+                        {
+                            return d3.sum(d, function (g){ return parseFloat(g.weekly_volume)});
+                        })
+                    .entries(databasedondest)
+                datamovjak=datafilterbydistrictandspecies;
+            }
+            else if (selected == "subdistrict")
+            {
+                areaselected = d.sub_district;
+
+                //return data with selected origin selection
+                var databasedondest = data_out.filter(function(d)
+                    {
+                        return d.origin_sub_district == areaselected && d.weekly_volume != 0;
+                    })
+
+                var datafilterbySDandspecies = d3.nest()
+                    .key(function(d){ return d.destination_district })
+                    .key(function(d){ return d.species_type })
+                    .rollup(function(d)
+                        {
+                            return d3.sum(d, function (g){ return g.weekly_volume});
+                        })
+                    .entries(databasedondest)
+                datamovjakSD=datafilterbySDandspecies;
+            }
+            else if (selected == "lbm")
+            {
+                areaselected = d.code;
+
+                //return data with selected origin selection
+                var databasedonorigin = data_out.filter(function(d)
+                    {
+                        return d.origin_code  == areaselected && d.weekly_volume != 0;
+                    })
+
+                var datafilterbylbmandspecies = d3.nest()
+                    .key(function(d){ return d.destination_district })
                     .key(function(d){ return d.species_type })
                     .rollup(function(d)
                         {
@@ -1386,6 +1571,52 @@
                 datamovjakFSLBM=datafilterbydistrictandspecies;
             }
         }
+        
+        var getInfoLBM_SDfromCY_D = function (d,selected)
+        {
+
+            if (selected == "subdistrict" || selected == "sd+lbm" )
+            {
+                areaselected = d.district || d.properties.KAB_KOTA;
+
+                //return data with selected origin selection
+                var databasedonorigin = data_out.filter(function(d)
+                    {
+                        return d.origin_district == areaselected;
+                    })
+
+                var datafilterbydistrictandspecies = d3.nest()
+                    .key(function(d){ return d.destination_sub_district })
+                    .key(function(d){ return d.species_type })
+                    .rollup(function(d)
+                        {
+                            return d3.sum(d, function (g){ return g.weekly_volume});
+                        })
+                    .entries(databasedonorigin)
+                datamovjakFSSD=datafilterbydistrictandspecies;
+            }
+            if (selected == "lbm" || selected == "sd+lbm")
+            {
+
+                areaselected = d.Name || d.properties.KAB_KOTA || d.properties.KABKOT;
+
+                //return data with selected origin selection
+                var databasedonorigin = data_in.filter(function(d)
+                    {
+                        return d.origin_district == areaselected;
+                    })
+
+                var datafilterbydistrictandspecies = d3.nest()
+                    .key(function(d){ return d.destination_code  })
+                    .key(function(d){ return d.species_type })
+                    .rollup(function(d)
+                        {
+                            return d3.sum(d, function (g){ return g.weekly_volume});
+                        })
+                    .entries(databasedonorigin)
+                datamovjakFSLBM=datafilterbydistrictandspecies;
+            }
+        }
     
         var getInfoCY_SDfromLBM = function (d,selected)
         {
@@ -1411,6 +1642,31 @@
                 datamovjakFSSD=datafilterbydistrictandspecies;
             }
         }
+        
+        var getInfoLBM_SDfromCY = function (d,selected)
+        {
+
+            if (selected == "subdistrict" )
+            {
+                areaselected = d.code //|| d.properties.KAB_KOTA;
+
+                //return data with selected origin selection
+                var databasedonorigin = data_out.filter(function(d)
+                    {
+                        return d.origin_code == areaselected;
+                    })
+
+                var datafilterbydistrictandspecies = d3.nest()
+                    .key(function(d){ return d.destination_sub_district })
+                    .key(function(d){ return d.species_type })
+                    .rollup(function(d)
+                        {
+                            return d3.sum(d, function (g){ return g.weekly_volume});
+                        })
+                    .entries(databasedonorigin)
+                datamovjakFSSD=datafilterbydistrictandspecies;
+            }
+        }
     
         var getInfoCY_SDfromLBMSD = function (d,selected)
         {
@@ -1427,6 +1683,31 @@
 
                 var datafilterbydistrictandspecies = d3.nest()
                     .key(function(d){ return d.origin_sub_district })
+                    .key(function(d){ return d.species_type })
+                    .rollup(function(d)
+                        {
+                            return d3.sum(d, function (g){ return g.weekly_volume});
+                        })
+                    .entries(databasedonorigin)
+                datamovjakFSSD=datafilterbydistrictandspecies;
+            }
+        }
+        
+        var getInfoLBM_SDfromCYSD = function (d,selected)
+        {
+
+            if (selected == "subdistrict" )
+            {
+                areaselected = d.sub_district //|| d.properties.KAB_KOTA;
+
+                //return data with selected origin selection
+                var databasedonorigin = data_out.filter(function(d)
+                    {
+                        return d.origin_sub_district == areaselected;
+                    })
+
+                var datafilterbydistrictandspecies = d3.nest()
+                    .key(function(d){ return d.destination_sub_district })
                     .key(function(d){ return d.species_type })
                     .rollup(function(d)
                         {
@@ -1476,7 +1757,7 @@
         
             d3.csv("movement_out.csv", function(dt)
             {
-                data_out = dt;	
+                data_out = dt;
             })
         }
 
@@ -1512,7 +1793,7 @@
                             var coordinates = [0, 0];
                                 coordinates = d3.mouse(this);
 
-                            var target2 = d3.select("#tooltip2")
+                            target2
                                 .style("left", coordinates[0] + "px")
                                 .style("top", coordinates[1] + (2*margin) + "px");
 
@@ -1561,7 +1842,7 @@
                         var coordinates = [0, 0];
                             coordinates = d3.mouse(this);
 
-                        var target2 = d3.select("#tooltip2")
+                        target2
                             .style("left", coordinates[0] + "px")
                             .style("top", coordinates[1] + (2*margin) + "px");
 
@@ -1609,7 +1890,7 @@
                         var coordinates = [0, 0];
                             coordinates = d3.mouse(this);
 
-                        var target2 = d3.select("#tooltip2")
+                        target2
                             .style("left", coordinates[0] + "px")
                             .style("top", coordinates[1] + (jkth + 4*margin) + "px");
 
@@ -1787,6 +2068,10 @@
             {
                 /*Create the circle for each block */
                 var circle = elemEnter.append("circle")
+                                        .attr("id", function(d)
+                                        {
+                                            return d.code;
+                                        })
                                         .style("stroke", "gray")
                                         .attr("stroke-width", 1)
                                         .style("fill", color)
@@ -1809,6 +2094,10 @@
             /*Create the rect for each block */
 
                 var rect = elemEnter.append("rect")
+                                    .attr("id", function(d)
+                                    {
+                                        return d.code;
+                                    })
                                     .style("stroke", "gray")
                                     .attr("stroke-width", 1)
                                     .style("fill", color)
@@ -1851,7 +2140,7 @@
         }
 
         //show circles of lbm positions 
-        function lbmextraction(proj, shape, citycolor)
+        function entityextraction(entity, proj, shape, citycolor)
         {
 
             var poslbm = [];
@@ -1871,7 +2160,7 @@
             {
                 var lbms = lbmss.filter(function(dat) 
                             {
-                                return dat.type == "LBM"
+                                return dat.type == entity
                             });
 
                 lbms = lbms.filter(function(lbm)
@@ -1903,19 +2192,21 @@
                 shape.selectAll("rect")
                     .on("click", function(d)
                     {
-                        var rectselected = d3.select(this);
-                        JKTFS_rect_onclick(rectselected,d);
+                        rectgetselected = d3.select(this);
+                        Drectgetselected = d;
+                        JKTFS_rect_onclick(rectgetselected,Drectgetselected);
                     })
                     .on("mouseover", function(d)
                     {
                         var coordinates = proj(d.location);
                         
 
-                        var target2 = d3.select("#tooltip2")
+                        target2
                             .style("left", coordinates[0] + "px")
                             .style("top", coordinates[1] + "px");
 
-                        target2.select("#daerah").text("LBM : "+d.name);
+                        target2.select("#daerah").text(entity+" : "+d.name);
+                        
 
                         //Show tooltip
                         d3.select("#tooltip2").classed("hidden", false);
@@ -1927,7 +2218,7 @@
         };
 
         //show circles of subdistrict positions (on JKT Map: Color Blue Circles)
-        function subdistrictextraction(proj, shape, citycolor)
+        function subdistrictextraction(entity, proj, shape, citycolor)
         {
             var possd=[];
             var arc = d3.geo.greatArc()
@@ -1946,7 +2237,7 @@
             {
                 var sds = sdss.filter(function(dat) 
                             {
-                                return dat.type == "CY"
+                                return dat.type == entity
                             });
                 // Only consider cities with at least one deliver.
                 sds = sds.filter(function(sd)
@@ -1976,18 +2267,20 @@
                 shape.selectAll("circle")
                 .on("click", function(d)
                 {
-                    var circleselected = d3.select(this);
-                    JKTFS_circle_onclick(circleselected,d)
+                    circlegetselected = d3.select(this);
+                    Dcirclegetselected = d;
+                    JKTFS_circle_onclick(circlegetselected,Dcirclegetselected)
                 })
                 .on("mouseover", function(d)
                 {
                     var coordinates = proj(d.location);
 
-                    var target2 = d3.select("#tooltip2")
+                    target2
                         .style("left", coordinates[0]  + "px")
                         .style("top", coordinates[1]  + "px");
 
-                    target2.select("#daerah").text("LBM_SubDistrict : "+d.sub_district);
+                    target2.select("#daerah").text(entity+"_SubDistrict : "+d.sub_district);
+                    
 
                     //Show tooltip
                     d3.select("#tooltip2").classed("hidden", false);
@@ -2656,29 +2949,6 @@
         function datafiltercollector(collector)
         {
             JV_unselected_state
-
-            //gjkt.selectAll("circle").remove();
-            //gjkt.selectAll("rect").remove();
-
-            if (collector == "District")
-            {
-                //do nothing
-            }
-            else if (collector == "SubDistrict")
-            {
-                //subdistrictextraction(projection, gjkt, setJktColorSDLBM)//"blue")
-            }
-            else if (collector == "LBM")
-            {
-                //lbmextraction(projection, gjkt, setJktColorSDLBM)//"red")
-            }
-            else
-            {
-                //lbmextraction(projection, gjkt, setJktColorSDLBM)//"red")
-                //subdistrictextraction(projection, gjkt, setJktColorSDLBM)//"blue")
-            }
-
-
         }
 
         //function filter for destination
@@ -2695,27 +2965,40 @@
         {
             //reset data variable into original data
             data_in = datadump_in;
+            data_out = datadump_out;
 
             if (species_type.length != 0)
             {
-                var datafilterspecies = [];
-                var n = 0;
+                var datafilterspecies_in = [];
+                var datafilterspecies_out = [];
+                var n = 0,m = 0;
                 for (var j = 0; j < species_type.length; j++)
                 {
-                    var selectedspecies = species_type[j];
+                    var selectedspecies_in = species_type[j];
+                    var selectedspecies_out = species_type[j];
                     for (var i = 0; i < data_in.length; i++)
                     {
-                        if (data_in[i].species_type == selectedspecies )
+                        if (data_in[i].species_type == selectedspecies_in )
                         {
-                            datafilterspecies[n] = data_in[i];
+                            datafilterspecies_in[n] = data_in[i];
                             n = n + 1;
+                            //break;
+                        }
+                    };
+                    for (var i = 0; i < data_out.length; i++)
+                    {
+                        if (data_out[i].species_type == selectedspecies_out )
+                        {
+                            datafilterspecies_out[m] = data_out[i];
+                            m = m + 1;
                             //break;
                         }
                     };
 
                 }
 
-                data_in = datafilterspecies;
+                data_in = datafilterspecies_in;
+                data_out = datafilterspecies_out;
 
                 if (typeof JVForFilter != 'undefined')
                 {
@@ -2725,6 +3008,28 @@
                 if (typeof JKTForFilter != 'undefined')
                 {
                     JKT_path_onclick();
+                }
+                
+                if (typeof JKTFSForFilter != 'undefined')
+                {
+                    JKTFS_path_onclick();
+                }
+                
+                if($('#cbf1a1').prop("checked") == true || $('#cbf1b1').prop("checked") == true )
+                {   
+                    if (typeof rectgetselected != 'undefined')
+                    {
+                        JKTFS_rect_onclick(rectgetselected,Drectgetselected);
+                    }
+                    
+                }
+                if($('#cbf1a2').prop("checked") == true || $('#cbf1b2').prop("checked") == true )
+                {   
+                    if (typeof circlegetselected != 'undefined')
+                    {
+                        JKTFS_circle_onclick(circlegetselected,Dcirclegetselected);
+                    }
+                    
                 }
 
             }
@@ -3064,7 +3369,15 @@
         {
 
             //returned all circles default colour
-            gjktFS.selectAll("circle").style("fill", "black")
+            //returned all circles default colour
+            if ($("#cbf1a2").prop("checked") == true && subactive == 1)
+            {
+                gjktFS.selectAll("circle").style("fill", "black")
+            }
+            else if ($("#cbf1b2").prop("checked") == true && subactive == 2)
+            {
+                gjktFS.selectAll("circle").style("fill", "blue")
+            }
 
             JV_unselected_state(d);
 
@@ -3090,11 +3403,18 @@
             JVJKT_legend_set("JKT");
 
             /* generate table info */
-            getInfoOrifromDestFS(d,"subdistrict")
+            if ($("#cbf1a2").prop("checked") == true && subactive == 1)
+            {
+                getInfoOrifromDestFS(d,"subdistrict")//ori here means destination_district
+            }
+            else if ($("#cbf1b2").prop("checked") == true && subactive == 2)
+            {
+                getInfoDestfromOriFS(d,"subdistrict")
+            }
             var datamovjakSDconvert = DataConverter2(datamovjakSD,"dest_to_ori","subdistrict");
             var datamovjakSDconvertaddtot = addTotalField(datamovjakSDconvert);
             totalreceiveSD = addTotalSendOrReceive(datamovjakSDconvert);
-            target.select("#info").text("Total weekly from All Origins (detail below) : "+totalreceiveSD+" species");
+            target2.select("#info").text("Total weekly volume : "+totalreceiveSD+" species");
             d3.select("#ljkt1R").text(totalreceiveSD+" species");
             //var JakTable = tabulate2(datamovjakSDconvertaddtot);
 
@@ -3102,7 +3422,15 @@
             deviderLegend(minmaxvaljvSD,"JV")
 
             //get the origin cities based on selected destination
-            var oricitySD = getOriginCityFS(d,"subdistrict");
+            
+            if ($("#cbf1a2").prop("checked") == true && subactive == 1)
+            {
+                var oricitySD = getOriginCityFS(d,"subdistrict");
+            }
+            else if ($("#cbf1b2").prop("checked") == true && subactive == 2)
+            {
+                var oricitySD = getDestinationCityFS(d,"subdistrict");
+            }
 
             //generate all selected origin city on Java Map
             dt_resSD = dt(jakFSjson,oricitySD);
@@ -3138,17 +3466,31 @@
                     });
         
             //generate CY_sub_district based on selected LBM_subdistrict
-            getInfoCY_SDfromLBMSD(d,"subdistrict")
+            if ($("#cbf1a2").prop("checked") == true && subactive == 1)
+            {
+                getInfoCY_SDfromLBMSD(d,"subdistrict")
+            }
+            else if ($("#cbf1b2").prop("checked") == true && subactive == 2)
+            {
+                getInfoLBM_SDfromCYSD(d,"subdistrict")
+            }
             var datamovjakFSconvertSD = DataConverter2(datamovjakFSSD,"ori_to_dest","subdistrict");
             var datamovjakFSconvertaddtotSD = addTotalField(datamovjakFSconvertSD);
             totalsendFSSD = addTotalSendOrReceive(datamovjakFSconvertSD);
-            target.select("#info").text("Total weekly to All destinations (detail below) : "+totalsendFSSD+" species");
+            target2.select("#info").text("Total weekly volume : "+totalsendFSSD+" species");
             d3.select("#ljv1R").text(totalsendFSSD+" species");
             //var JakFSTable = tabulate2(datamovjakFSconvertaddtotSD);
             minmaxvaljktFS = getMaxTot(datamovjakFSconvertaddtotSD);
             deviderLegend(minmaxvaljktFS,"JKT")
     
-            var destsd = getDestCityFS(d, "subdistrict");
+            if ($("#cbf1a2").prop("checked") == true && subactive == 1)
+            {
+                var destsd = getDestCityFS(d, "subdistrict");
+            }
+            else if ($("#cbf1b2").prop("checked") == true && subactive == 2)
+            {
+                var destsd = getOriCityFS(d, "subdistrict");
+            } 
   
             var dtsd = function(datassd)
             {
@@ -3156,7 +3498,14 @@
                 {
                     var sds = sdss.filter(function(dat) 
                                 {
-                                    return dat.type == "CY"
+                                    if ($("#cbf1a2").prop("checked") == true && subactive == 1)
+                                    {
+                                        return dat.type == "CY"
+                                    }
+                                    else if ($("#cbf1b2").prop("checked") == true && subactive == 2)
+                                    {
+                                        return dat.type == "LBM"
+                                    } 
                                 });
                     var result = [];
                     var n = 0;
@@ -3203,9 +3552,11 @@
 
                     //if (connectionmenu[0] == "Line" && (collectormenu[0] == "SubDistrict" || collectormenu[1] == "SubDistrict" ))
                     //{
+                        var endpoint = []
                         for (var i = 0; i < possd.length; i++)
                         {
-                            drawlinerectFS(startpoint,possd[i],"red")
+                            endpoint[i] = [possd[i][0]+5,possd[i][1]+5]
+                            drawlinerectFS(startpoint,endpoint[i],"red")
                         }
                     //}
                 });
@@ -3246,7 +3597,7 @@
             var datamovjakSDconvert = DataConverter2(datamovjakSD,"dest_to_ori","subdistrict");
             var datamovjakSDconvertaddtot = addTotalField(datamovjakSDconvert);
             totalreceiveSD = addTotalSendOrReceive(datamovjakSDconvert);
-            target.select("#info").text("Total weekly from All Origins (detail below) : "+totalreceiveSD+" species");
+            target2.select("#info").text("Total weekly volume : "+totalreceiveSD+" species");
             d3.select("#ljkt1R").text(totalreceiveSD+" species");
             //var JakTable = tabulate2(datamovjakSDconvertaddtot);
 
@@ -3294,7 +3645,15 @@
         {
 
             //returned all circles default colour
-            gjktFS.selectAll("rect").style("fill", "black")
+            if ($("#cbf1a1").prop("checked") == true && subactive == 1)
+            {
+                gjktFS.selectAll("rect").style("fill", "black")
+            }
+            else if ($("#cbf1b1").prop("checked") == true && subactive == 2)
+            {
+                gjktFS.selectAll("rect").style("fill", "blue")
+            }
+                
             JV_unselected_state(d)
 
             /* generate select-self SD position and Bubble text */
@@ -3320,11 +3679,18 @@
             JVJKT_legend_set("JKT");
 
             /* generate table info */
-            getInfoOrifromDestFS(d,"lbm")//ori here means destination_district
+            if ($("#cbf1a1").prop("checked") == true && subactive == 1)
+            {
+                getInfoOrifromDestFS(d,"lbm")//ori here means destination_district
+            }
+            else if ($("#cbf1b1").prop("checked") == true && subactive == 2)
+            {
+                getInfoDestfromOriFS(d,"lbm")
+            } 
             var datamovjakLBMconvert = DataConverter2(datamovjakLBM,"dest_to_ori","lbm");
             var datamovjakLBMconvertaddtot = addTotalField(datamovjakLBMconvert);
             var totalreceiveLBM = addTotalSendOrReceive(datamovjakLBMconvert);
-            target.select("#info").text("Total weekly from All Origins (detail below) : "+totalreceiveLBM+" species");
+            target2.select("#info").text("Total weekly volume : "+totalreceiveLBM+" species");
             d3.select("#ljkt1R").text(totalreceiveLBM+" species");
             //var JakTable = tabulate2(datamovjakLBMconvertaddtot);
 
@@ -3333,7 +3699,14 @@
 
             //get the origin cities based on selected destination
             var selecteddata = getDistrictBasedOnMarketCode(d);
-            var oricityLBM = getOriginCityFS(selecteddata,"lbm");
+            if ($("#cbf1a1").prop("checked") == true && subactive == 1)
+            {
+                var oricityLBM = getOriginCityFS(selecteddata,"lbm");
+            }
+            else if ($("#cbf1b1").prop("checked") == true && subactive == 2)
+            {
+                var oricityLBM = getDestinationCityFS(selecteddata,"lbm");
+            } 
 
             //generate all selected origin city on Java Map
             dt_resLBM = dt(jakFSjson,oricityLBM);
@@ -3368,17 +3741,31 @@
                     });
                 
             //generate CY_sub_district based on selected LBM
-            getInfoCY_SDfromLBM(d,"subdistrict")
+            if ($("#cbf1a1").prop("checked") == true && subactive == 1)
+            {
+                getInfoCY_SDfromLBM(d,"subdistrict")
+            }
+            else if ($("#cbf1b1").prop("checked") == true && subactive == 2)
+            {
+                getInfoLBM_SDfromCY(d,"subdistrict")
+            } 
             var datamovjakFSconvertSD = DataConverter2(datamovjakFSSD,"ori_to_dest","subdistrict");
             var datamovjakFSconvertaddtotSD = addTotalField(datamovjakFSconvertSD);
             totalsendFSSD = addTotalSendOrReceive(datamovjakFSconvertSD);
-            target.select("#info").text("Total weekly to All destinations (detail below) : "+totalsendFSSD+" species");
+            target2.select("#info").text("Total weekly volume : "+totalsendFSSD+" species");
             d3.select("#ljv1R").text(totalsendFSSD+" species");
             //var JakFSTable = tabulate2(datamovjakFSconvertaddtotSD);
             minmaxvaljktFS = getMaxTot(datamovjakFSconvertaddtotSD);
             deviderLegend(minmaxvaljktFS,"JKT")
     
-            var destsd = getDestCityFS(d, "subdistrict");
+            if ($("#cbf1a1").prop("checked") == true && subactive == 1)
+            {
+                var destsd = getDestCityFS(d, "subdistrict");
+            }
+            else if ($("#cbf1b1").prop("checked") == true && subactive == 2)
+            {
+                var destsd = getOriCityFS(d, "subdistrict");
+            } 
     
             var dtsd = function(datassd)
             {
@@ -3386,7 +3773,14 @@
                 {
                     var sds = sdss.filter(function(dat) 
                                 {
-                                    return dat.type == "CY"
+                                    if ($("#cbf1a1").prop("checked") == true && subactive == 1)
+                                    {
+                                        return dat.type == "CY"
+                                    }
+                                    else if ($("#cbf1b1").prop("checked") == true && subactive == 2)
+                                    {
+                                        return dat.type == "LBM"
+                                    } 
                                 });
                     var result = [];
                     var n = 0;
@@ -3477,7 +3871,7 @@
             var datamovjakLBMconvert = DataConverter2(datamovjakLBM,"dest_to_ori","lbm");
             var datamovjakLBMconvertaddtot = addTotalField(datamovjakLBMconvert);
             var totalreceiveLBM = addTotalSendOrReceive(datamovjakLBMconvert);
-            target.select("#info").text("Total weekly from All Origins (detail below) : "+totalreceiveLBM+" species");
+            target2.select("#info").text("Total weekly volume : "+totalreceiveLBM+" species");
             d3.select("#ljkt1R").text(totalreceiveLBM+" species");
             //var JakTable = tabulate2(datamovjakLBMconvertaddtot);
 
@@ -3562,7 +3956,7 @@
                 var datamovjavconvert = DataConverter2(datamovjav,"ori_to_dest","district");
                 var datamovjavconvertaddtot = addTotalField(datamovjavconvert);
                 totalsend = addTotalSendOrReceive(datamovjavconvert);
-                target.select("#info").text("Total weekly to All destinations (detail below) : "+totalsend+" species");
+                target2.select("#info").text("Total weekly volume : "+totalsend+" species");
                 d3.select("#ljv1R").text(totalsend+" species");
                 //var JavTable = tabulate2(datamovjavconvertaddtot);
                 minmaxvaljkt = getMaxTot(datamovjavconvertaddtot);
@@ -3585,7 +3979,7 @@
                 var datamovjavconvertSD = DataConverter2(datamovjavSD,"ori_to_dest","subdistrict");
                 var datamovjavconvertaddtotSD = addTotalField(datamovjavconvertSD);
                 totalsendSD = addTotalSendOrReceive(datamovjavconvertSD);
-                target.select("#info").text("Total weekly to All destinations (detail below) : "+totalsendSD+" species");
+                target2.select("#info").text("Total weekly volume : "+totalsendSD+" species");
                 d3.select("#ljv1R").text(totalsendSD+" species");
                 //var JavTable = tabulate2(datamovjavconvertaddtotSD);
                 minmaxvaljkt = getMaxTot(datamovjavconvertaddtotSD);
@@ -3628,7 +4022,7 @@
                     minmaxvaljkt = getMaxTot(dt_lbm);
                     deviderLegend(minmaxvaljkt,"JKT")
                     totalsendLBM = addTotalSendOrReceive(dt_lbm);
-                    target.select("#info").text("Total weekly to All destinations (detail below) : "+totalsendLBM+" species");
+                    target2.select("#info").text("Total weekly volume : "+totalsendLBM+" species");
                     d3.select("#ljv1R").text(totalsendLBM+" species");
                 })
             }
@@ -3740,11 +4134,12 @@
                         {
                             var coordinates = proj(d.location);
 
-                            var target2 = d3.select("#tooltip2")
+                            target2
                                 .style("left", coordinates[0]  + "px")
                                 .style("top", coordinates[1]  + "px");
 
                             target2.select("#daerah").text("CY_SubDistrict : "+d.subdistrict);
+                            
 
                             //Show tooltip
                             d3.select("#tooltip2").classed("hidden", false);
@@ -3826,11 +4221,12 @@
                         {
                             var coordinates = proj(d.location);
 
-                            var target2 = d3.select("#tooltip2")
+                            target2
                                 .style("left", coordinates[0] +"px")
                                 .style("top", coordinates[1] + "px");
 
                             target2.select("#daerah").text("LBM : "+d.name);
+                            
 
                             //Show tooltip
                             d3.select("#tooltip2").classed("hidden", false);
@@ -3872,7 +4268,7 @@
             var datamovjakconvert = DataConverter2(datamovjak,"dest_to_ori","district");
             var datamovjakconvertaddtot = addTotalField(datamovjakconvert);
             totalreceive = addTotalSendOrReceive(datamovjakconvert);
-            target.select("#info").text("Total weekly from All Origins (detail below) : "+totalreceive+" species");
+            target2.select("#info").text("Total weekly volume : "+totalreceive+" species");
             d3.select("#ljkt1R").text(totalreceive+" species");
             //var JakTable = tabulate2(datamovjakconvertaddtot);
 
@@ -3946,24 +4342,45 @@
             /* generate table info */
             //if (destinationmenu[1] == "SubDistrict" || typeof destinationmenu[0] == 'undefined' )
             //{
-                getInfoCY_SDfromLBM_D(JKTFSDvalueForFilter,"subdistrict");
+                if ($("#cbf1a3").prop("checked") == true && subactive == 1)
+                {
+                    getInfoCY_SDfromLBM_D(JKTFSDvalueForFilter,"subdistrict");
+                }
+                else if ($("#cbf1b3").prop("checked") == true  && subactive == 2 )
+                {
+                    getInfoLBM_SDfromCY_D(JKTFSDvalueForFilter,"subdistrict");
+                }
                 var datamovjakFSconvertSD = DataConverter2(datamovjakFSSD,"ori_to_dest","subdistrict");
                 var datamovjakFSconvertaddtotSD = addTotalField(datamovjakFSconvertSD);
                 totalsendFSSD = addTotalSendOrReceive(datamovjakFSconvertSD);
-                target.select("#info").text("Total weekly to All destinations (detail below) : "+totalsendFSSD+" species");
+                target2.select("#info").text("Total weekly volume : "+totalsendFSSD+" species");
                 d3.select("#ljv1R").text(totalsendFSSD+" species");
                 //var JakFSTable = tabulate2(datamovjakFSconvertaddtotSD);
                 minmaxvaljktFS = getMaxTot(datamovjakFSconvertaddtotSD);
                 deviderLegend(minmaxvaljktFS,"JKT")
 
-                getInfoCY_SDfromLBM_D(JKTFSDvalueForFilter,"lbm");
+                if ($("#cbf1a3").prop("checked") == true && subactive == 1)
+                {
+                    getInfoCY_SDfromLBM_D(JKTFSDvalueForFilter,"lbm");
+                }
+                else if ($("#cbf1b3").prop("checked") == true && subactive == 2)
+                {
+                    getInfoLBM_SDfromCY_D(JKTFSDvalueForFilter,"lbm");
+                }
                 var datamovjakFSconvertLBM = DataConverter2(datamovjakFSLBM,"ori_to_dest","lbm");
                 var datamovjakFSconvertaddtotLBM = addTotalField(datamovjakFSconvertLBM);
                 //totalsendLBMFS = addTotalSendOrReceive(dt_lbm);
             //}
             if (destinationmenu[1] == "LBM")
             {
-                getInfoCY_SDfromLBM_D(JKTFSDvalueForFilter,"lbm");
+                if ($("#cbf1a3").prop("checked") == true && subactive == 1)
+                {
+                    getInfoCY_SDfromLBM_D(JKTFSDvalueForFilter,"lbm");
+                }
+                else if ($("#cbf1b3").prop("checked") == true && subactive == 2)
+                {
+                    getInfoLBM_SDfromCY_D(JKTFSDvalueForFilter,"lbm");
+                }
                 var datamovjakFSconvertLBM = DataConverter2(datamovjakFSLBM,"ori_to_dest","lbm");
                 var datamovjakFSconvertaddtotLBM = addTotalField(datamovjakFSconvertLBM);
 
@@ -3992,7 +4409,7 @@
                     minmaxvaljktFS = getMaxTot(dt_lbm);
                     deviderLegend(minmaxvaljkt,"JKT")
                     totalsendLBMFS = addTotalSendOrReceive(dt_lbm);
-                    target.select("#info").text("Total weekly to All destinations (detail below) : "+totalsendLBMFS+" species");
+                    target2.select("#info").text("Total weekly volume : "+totalsendLBMFS+" species");
                     d3.select("#ljv1R").text(totalsendLBMFS+" species");
                 })
             }
@@ -4000,7 +4417,15 @@
             /* generate position subdistrict */
             //if (destinationmenu[0] == "SubDistrict" || destinationmenu[1]=="SubDistrict" || typeof destinationmenu[0] == 'undefined')
             {
-                var destsd = getDestCityFS(JKTFSDvalueForFilter, "district");
+                if ($("#cbf1a3").prop("checked") == true && subactive == 1)
+                {
+                    var destsd = getDestCityFS(JKTFSDvalueForFilter, "district");
+                }
+                else if ($("#cbf1b3").prop("checked") == true && subactive == 2)
+                {
+                    var destsd = getOriCityFS(JKTFSDvalueForFilter, "district");
+                }
+                
                 var dtsd = function(datassd)
                 {
                     d3.csv("DESTINATION.csv", function(sdss)
@@ -4068,13 +4493,14 @@
                         })
                         .on("mouseover", function(d)
                         {
-                            var coordinates = proj(d.location);
+                            var coordinates = projectionFS(d.location);
 
-                            var target2 = d3.select("#tooltip2")
+                            target2
                                 .style("left", coordinates[0] + "px")
                                 .style("top", coordinates[1] + "px");
 
                             target2.select("#daerah").text("CY_subDistrict : "+d.sub_district);
+                            
 
                             //Show tooltip
                             d3.select("#tooltip2").classed("hidden", false);
@@ -4156,7 +4582,7 @@
                         {
                             var coordinates = proj(d.location);
 
-                            var target2 = d3.select("#tooltip2")
+                            target2
                                 .style("left", coordinates[0] +"px")
                                 .style("top", coordinates[1] + "px");
 
@@ -4246,7 +4672,7 @@
         d3.json("jakarta.json", function(json) {
             jakFSjson = json;
             FSMapJKT(json);
-            lbmextraction(projectionFS, gjktFS, "black")//setJktColorSDLBM)
+            entityextraction("LBM", projectionFS, gjktFS, "black")//setJktColorSDLBM)
             $('#cbf1a1').prop('checked', true);
         });
 
@@ -4266,7 +4692,7 @@
         $('.DU').prop('checked', true);
         $('.LA').prop('checked', true);
 
-
+        var subactive = 1;
 /****************************************************************************************/
         function initState()
         {
@@ -4491,7 +4917,7 @@
             d3.json("jakarta.json", function(json) {
                 jakFSjson = json;
                 FSMapJKT(json);
-                lbmextraction(projectionFS, gjktFS, "black")//setJktColorSDLBM)
+                entityextraction("LBM", projectionFS, gjktFS, "black")//setJktColorSDLBM)
                 $('#cbf1a1').prop('checked', true);
             });
         
@@ -4501,22 +4927,23 @@
             $('#sCYSDinJKT').click(function () 
             {
                 initStateWOPath();
-                lbmextraction(projectionFS, gjktFS, "black")//setJktColorSDLBM)
+                entityextraction("LBM", projectionFS, gjktFS, "black")//setJktColorSDLBM)
                 $('#cbf1a1').prop('checked', true);
+                subactive = 1;
             });
         
                 //filter1sub1rb1
                 $('#cbf1a1').click(function ()
                 {
                     initStateWOPath();
-                    lbmextraction(projectionFS, gjktFS, "black")
+                    entityextraction("LBM", projectionFS, gjktFS, "black")
                 });
             
                 //filter1sub1rb2
                 $('#cbf1a2').click(function ()
                 {
                     initStateWOPath();
-                    subdistrictextraction(projectionFS, gjktFS, "black")
+                    subdistrictextraction("LBM", projectionFS, gjktFS, "black")
                 });
             
                 //filter1sub1rb3
@@ -4528,10 +4955,31 @@
             //filter1sub2
             $('#sLBMinJKT').click(function () 
             {
-                gjktFS.selectAll("rect").remove();
-                subdistrictextraction(projectionFS, gjktFS, "black")//setJktColorSDLBM)
+                initStateWOPath();
+                entityextraction("CY", projectionFS, gjktFS, "blue")
                 $('#cbf1b1').prop('checked', true);
+                subactive = 2;
             });
+                
+                //filter1sub2rb1
+                $('#cbf1b1').click(function ()
+                {
+                    initStateWOPath();
+                    entityextraction("CY", projectionFS, gjktFS, "blue")
+                });
+            
+                //filter1sub2rb2
+                $('#cbf1b2').click(function ()
+                {
+                    initStateWOPath();
+                    subdistrictextraction("CY", projectionFS, gjktFS, "blue")
+                });
+            
+                //filter1sub2rb3
+                $('#cbf1b3').click(function ()
+                {
+                    initStateWOPath();
+                });
     
         //filter2
         $('#sORIinJKTJV').click(function () 

@@ -986,7 +986,7 @@
             {
                 datamovement = data_out;
             }
-            else if (filteractive == "filter2")
+            else if (filteractive == "filter2" || filteractive == "filter3")
             {
                 datamovement = data_in;
             }
@@ -1208,7 +1208,7 @@
             {
                 datamovement = data_out;
             }
-            else if (filteractive == "filter2")
+            else if (filteractive == "filter2" || filteractive == "filter3")
             {
                 datamovement = data_in;
             }
@@ -1297,7 +1297,7 @@
             {
                 datamovement = data_out;
             }
-            else if (filteractive == "filter2")
+            else if (filteractive == "filter2" || filteractive == "filter3")
             {
                 datamovement = data_in;
             }
@@ -1367,12 +1367,22 @@
 
         var getInfoJKTfromJV = function (d,selected)
         {
+            var datamovement = []
+            if (filteractive == "filter1")
+            {
+                datamovement = data_out;
+            }
+            else if (filteractive == "filter2" || filteractive == "filter3")
+            {
+                datamovement = data_in;
+            }
+            
             if (selected == "district")
             {
                 areaselected = d.Name || d.properties.KAB_KOTA || d.properties.KABKOT;
 
                 //return data with selected origin selection
-                var databasedonorigin = data_in.filter(function(d)
+                var databasedonorigin = datamovement.filter(function(d)
                     {
                         return d.origin_district == areaselected && d.weekly_volume != 0;
                     })
@@ -1392,7 +1402,7 @@
                 areaselected = d.Name || d.properties.KAB_KOTA || d.properties.KABKOT;
 
                 //return data with selected origin selection
-                var databasedonorigin = data_in.filter(function(d)
+                var databasedonorigin = datamovement.filter(function(d)
                     {
                         return d.origin_district == areaselected;
                     })
@@ -1414,7 +1424,7 @@
                 areaselected = d.Name || d.properties.KAB_KOTA || d.properties.KABKOT;
 
                 //return data with selected origin selection
-                var databasedonorigin = data_in.filter(function(d)
+                var databasedonorigin = datamovement.filter(function(d)
                     {
                         return d.origin_district == areaselected;
                     })
@@ -1704,7 +1714,14 @@
                                 .style("left", coordinates[0] + "px")
                                 .style("top", coordinates[1] + (2*margin) + "px");
 
-                            target2.select("#daerah").text("CY_District : "+d.properties.KAB_KOTA+" - " + d.properties.PROPINSI);
+                            if($('#cbf1a3').prop("checked") == true)
+                            {
+                                target2.select("#daerah").text("LBM_District : "+d.properties.KAB_KOTA+" - " + d.properties.PROPINSI);
+                            }
+                            else if($('#cbf1b3').prop("checked") == true)
+                            {
+                                target2.select("#daerah").text("CY_District : "+d.properties.KAB_KOTA+" - " + d.properties.PROPINSI);
+                            }
 
                             //Show tooltip
                             d3.select("#tooltip2").classed("hidden", false);
@@ -1760,8 +1777,15 @@
                                 .style("left", coordinates[0] + "px")
                                 .style("top", coordinates[1] + (2*margin) + "px");
 
-                            target2.select("#daerah").text("CY_District : "+d.properties.KAB_KOTA+" - " + d.properties.PROPINSI);
-
+                            if($('#cbf2a3').prop("checked") == true)
+                            {
+                                target2.select("#daerah").text("CY_District : "+d.properties.KAB_KOTA+" - " + d.properties.PROPINSI);
+                            }
+                            else if($('#cbf2b3').prop("checked") == true)
+                            {
+                                target2.select("#daerah").text("LBM_District : "+d.properties.KAB_KOTA+" - " + d.properties.PROPINSI);
+                            }
+                            
                             //Show tooltip
                             d3.select("#tooltip2").classed("hidden", false);
                         }
@@ -2077,7 +2101,7 @@
             {
                 datamovement = data_out;
             }
-            else if (filteractive == "filter2")
+            else if (filteractive == "filter2" || filteractive == "filter3")
             {
                 datamovement = data_in;
             }
@@ -2164,7 +2188,7 @@
             {
                 datamovement = data_out;
             }
-            else if (filteractive == "filter2")
+            else if (filteractive == "filter2" || filteractive == "filter3")
             {
                 datamovement = data_in;
             }
@@ -3341,7 +3365,7 @@
                 }
                 startpoint = projectionFS(d.location);
             }
-            else if (filteractive == "filter2")
+            else if (filteractive == "filter2" || filteractive == "filter3")
             {  
                 if ($("#cbf2a2").prop("checked") == true && subactive == 1)
                 {
@@ -3390,7 +3414,7 @@
                     getInfoDestfromOriFS(d,"subdistrict")
                 }
             }
-            else if (filteractive == "filter2")
+            else if (filteractive == "filter2" || filteractive == "filter3")
             {
                 if ($("#cbf2a2").prop("checked") == true && subactive == 1)
                 {
@@ -3426,7 +3450,7 @@
                 }
                 dt_resSD = dt(jakFSjson,oricitySD);
             }
-            else if (filteractive == "filter2")
+            else if (filteractive == "filter2" || filteractive == "filter3")
             {
                 if ($("#cbf2a2").prop("checked") == true && subactive == 1)
                 {
@@ -3472,7 +3496,7 @@
                             //}
                         });
             }
-            else if (filteractive == "filter2")
+            else if (filteractive == "filter2" || filteractive == "filter3")
             {
                 map2.selectAll("path")
                     .data(dt_resSD, function(d)
@@ -3688,7 +3712,7 @@
                 var dotrect = projectionFS(d.location);
                 startpoint = [dotrect[0]+5,dotrect[1]+5];
             }
-            else if (filteractive == "filter2")
+            else if (filteractive == "filter2" || filteractive == "filter3")
             {  
                 if ($("#cbf2a1").prop("checked") == true && subactive == 1)
                 {
@@ -3739,7 +3763,7 @@
                     getInfoDestfromOriFS(d,"lbm")
                 }
             }
-            else if (filteractive == "filter2")
+            else if (filteractive == "filter2" || filteractive == "filter3")
             {
                 if ($("#cbf2a1").prop("checked") == true && subactive == 1)
                 {
@@ -3776,7 +3800,7 @@
                 }
                 dt_resLBM = dt(jakFSjson,oricityLBM);
             }
-            else if (filteractive == "filter2")
+            else if (filteractive == "filter2" || filteractive == "filter3")
             {
                 if ($("#cbf2a1").prop("checked") == true && subactive == 1)
                 {
@@ -3823,7 +3847,7 @@
                             //}
                         });
             }
-            else if (filteractive == "filter2")
+            else if (filteractive == "filter2" || filteractive == "filter3")
             {
                 map2.selectAll("path")
                     .data(dt_resLBM, function(d)
@@ -5234,6 +5258,7 @@
         //filter3
         $('#sDESTinJKTJV').click(function () 
         { /* perform action here */ 
+            filteractive = "filter3";
             initState();
             d3.select("#gjktFS_rect").classed("hidden", true);
             d3.select("#gjkt_rect").classed("hidden", false);

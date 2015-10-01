@@ -836,6 +836,10 @@
 
         var startpoint = [],
             endpoint = [];
+            
+        var unselectedcolor = "#E4E4E4",
+            unselectedcolorSD = "#E4E4E4",
+            hovercolor = "red";
 
         var setNormalColor = function(d)
         {
@@ -878,7 +882,7 @@
             else
             {
                 //If value is undefined…
-                return "#FFFFFF"
+                return "red";//"#FFFFFF"
             }
         }
 
@@ -1727,7 +1731,10 @@
                             d3.select("#tooltip2").classed("hidden", false);
                         } 
                     })
-                    .on("mouseout", function(d){d3.select("#tooltip2").classed("hidden", true);});;
+                    .on("mouseout", function(d)
+                    {
+                        d3.select("#tooltip2").classed("hidden", true);
+                    });
 
             } else {
                 gjktFS.selectAll("path")
@@ -1790,7 +1797,10 @@
                             d3.select("#tooltip2").classed("hidden", false);
                         }
                     })
-                    .on("mouseout", function(d){d3.select("#tooltip2").classed("hidden", true);});
+                    .on("mouseout", function(d)
+                    {
+                        d3.select("#tooltip2").classed("hidden", true);
+                    });
 
             }
             else
@@ -1846,7 +1856,10 @@
                             d3.select("#tooltip2").classed("hidden", false);
                         }
                     })
-                    .on("mouseout", function(d){d3.select("#tooltip2").classed("hidden", true);});
+                    .on("mouseout", function(d)
+                    {
+                        d3.select("#tooltip2").classed("hidden", true);
+                    });
 
             } else {
                 map2.selectAll("path")
@@ -2025,7 +2038,7 @@
                                         .style("fill", color)
                                         .attr("r", function(d,i)
                                         {
-                                            if (connectionmenu[0] == "Size" || connectionmenu[1] == "Size" || connectionmenu[2] == "Size" )
+                                            if ((connectionmenu[0] == "Size" || connectionmenu[1] == "Size" || connectionmenu[2] == "Size" ) && typeof d.total != 'undefined')
                                             {
                                                 return Math.sqrt(d.total/50); }
                                             else
@@ -2051,7 +2064,7 @@
                                     .style("fill", color)
                                     .attr("height", function(d,i)
                                     {
-                                        if (connectionmenu[0] == "Size" || connectionmenu[1] == "Size" || connectionmenu[2] == "Size" )
+                                        if ((connectionmenu[0] == "Size" || connectionmenu[1] == "Size" || connectionmenu[2] == "Size" ) && typeof d.total != 'undefined')
                                         {
                                             return Math.sqrt(d.total/50); }
                                         else
@@ -2061,7 +2074,7 @@
                                     })
                                     .attr("width", function(d,i)
                                     {
-                                        if (connectionmenu[0] == "Size" || connectionmenu[1] == "Size" || connectionmenu[2] == "Size" )
+                                        if ((connectionmenu[0] == "Size" || connectionmenu[1] == "Size" || connectionmenu[2] == "Size" ) && typeof d.total != 'undefined')
                                         {
                                             return Math.sqrt(d.total/50); }
                                         else
@@ -2156,6 +2169,7 @@
                     })
                     .on("mouseover", function(d)
                     {
+                        d3.select(this).style("fill",hovercolor);
                         var coordinates = proj(d.location);
                         
 
@@ -2170,7 +2184,16 @@
                         d3.select("#tooltip2").classed("hidden", false);
 
                     })
-                    .on("mouseout", function(d){d3.select("#tooltip2").classed("hidden", true);});
+                    .on("mouseout", function(d)
+                    {
+                        d3.select("#tooltip2").classed("hidden", true);
+                        d3.selectAll("rect").style("fill",unselectedcolor);
+                        //d3.selectAll("circle").style("fill",unselectedcolorSD);
+                        if (typeof rectgetselected != 'undefined')
+                        {
+                            rectgetselected.style("fill","orange");
+                        }
+                    });
 
             });
         };
@@ -2241,6 +2264,7 @@
                 })
                 .on("mouseover", function(d)
                 {
+                    d3.select(this).style("fill",hovercolor);
                     var coordinates = proj(d.location);
 
                     target2
@@ -2254,7 +2278,16 @@
                     d3.select("#tooltip2").classed("hidden", false);
 
                 })
-                .on("mouseout", function(d){d3.select("#tooltip2").classed("hidden", true);});
+                .on("mouseout", function(d)
+                {
+                    d3.select("#tooltip2").classed("hidden", true);
+                    //d3.selectAll("rect").style("fill",unselectedcolor);
+                    d3.selectAll("circle").style("fill",unselectedcolorSD);
+                    if (typeof circlegetselected != 'undefined')
+                    {
+                        circlegetselected.style("fill","orange");
+                    }
+                });
 
             });
         };
@@ -2988,11 +3021,11 @@
             {
                 if ($("#cbf1a2").prop("checked") == true && subactive == 1)
                 {
-                    gjktFS.selectAll("circle").style("fill", "black")
+                    gjktFS.selectAll("circle").style("fill", unselectedcolor)
                 }
                 else if ($("#cbf1b2").prop("checked") == true && subactive == 2)
                 {
-                    gjktFS.selectAll("circle").style("fill", "blue")
+                    gjktFS.selectAll("circle").style("fill", unselectedcolorSD)
                 }
                 startpoint = projectionFS(d.location);
             }
@@ -3000,11 +3033,11 @@
             {  
                 if ($("#cbf2a2").prop("checked") == true && subactive == 1)
                 {
-                    gjkt.selectAll("circle").style("fill", "blue")
+                    gjkt.selectAll("circle").style("fill", unselectedcolorSD)
                 }
                 else if ($("#cbf2b2").prop("checked") == true && subactive == 2)
                 {
-                    gjkt.selectAll("circle").style("fill", "black")
+                    gjkt.selectAll("circle").style("fill", unselectedcolor)
                 }
                 startpoint = projection(d.location);
             }
@@ -3018,11 +3051,11 @@
             d3.selectAll("#line_id").remove();
             gjktFS.selectAll("rect").remove();
             //gjkt.selectAll("rect").remove();
-            //if (connectionmenu[0] == "Line")
-            //{
-                //startpoint = projectionFS(d.location);
-                //generateCentralDistrict(this,gjkt)
-            //}
+            if (connectionmenu[0] == "Line")
+            {
+                startpoint = projectionFS(d.location);
+                generateCentralDistrict(this,gjkt)
+            }
 
             target.select("#daerah").text("DEST Subdistrict :"+d.subdistrict);
 
@@ -3115,16 +3148,16 @@
                     {
                         return d.properties.OBJECTID;
                     })
-                    .style("fill", setJavColorSDLBM)
+                    //.style("fill", setJavColorSDLBM)
                     .attr("stroke-width", 2)
                     .each(function(d,i)
                         {
-                            //if (connectionmenu[0] == "Line")
-                            //{
+                            if (connectionmenu[0] == "Line")
+                            {
                                 endpoint[i] = getCentroid(d3.select(this))
-                                //generateCentralDistrict(endpoint[i],gjw)
+                                generateCentralDistrict(endpoint[i],gjw)
                                 drawlinerectFS(startpoint,endpoint[i],"black")
-                            //}
+                            }
                         });
             }
             else if (filteractive == "filter2" || filteractive == "filter3")
@@ -3134,16 +3167,16 @@
                     {
                         return d.properties.OBJECTID;
                     })
-                    .style("fill", setJavColorSDLBM)
+                    //.style("fill", setJavColorSDLBM)
                     .attr("stroke-width", 2)
                     .each(function(d,i)
                         {
-                            //if (connectionmenu[0] == "Line")
-                            //{
+                            if (connectionmenu[0] == "Line")
+                            {
                                 endpoint[i] = getCentroid(d3.select(this))
-                                //generateCentralDistrict(endpoint[i],gjw)
+                                generateCentralDistrict(endpoint[i],gjw)
                                 drawlineDest2Ori(startpoint,endpoint[i],"black")
-                            //}
+                            }
                         });
             }
         
@@ -3234,15 +3267,15 @@
                         //generate the circles
                         showCity(result,gjktFS,possd,setJktColorSDLBM, "rect");
 
-                        //if (connectionmenu[0] == "Line" && (collectormenu[0] == "SubDistrict" || collectormenu[1] == "SubDistrict" ))
-                        //{
+                        if (connectionmenu[0] == "Line" && (collectormenu[0] == "SubDistrict" || collectormenu[1] == "SubDistrict" ))
+                        {
                             var endpoint = []
                             for (var i = 0; i < possd.length; i++)
                             {
                                 endpoint[i] = [possd[i][0]+5,possd[i][1]+5]
                                 drawlinerectFS(startpoint,endpoint[i],"red")
                             }
-                        //}
+                        }
                     });
                 }
                 var dataselectedsd = dtsd(destsd);
@@ -3334,11 +3367,11 @@
             {
                 if ($("#cbf1a1").prop("checked") == true && subactive == 1)
                 {
-                    gjktFS.selectAll("rect").style("fill", "black")
+                    gjktFS.selectAll("rect").style("fill", unselectedcolor)
                 }
                 else if ($("#cbf1b1").prop("checked") == true && subactive == 2)
                 {
-                    gjktFS.selectAll("rect").style("fill", "blue")
+                    gjktFS.selectAll("rect").style("fill", unselectedcolorSD)
                 }
                 var dotrect = projectionFS(d.location);
                 startpoint = [dotrect[0]+5,dotrect[1]+5];
@@ -3347,11 +3380,11 @@
             {  
                 if ($("#cbf2a1").prop("checked") == true && subactive == 1)
                 {
-                    gjkt.selectAll("rect").style("fill", "blue")
+                    gjkt.selectAll("rect").style("fill", unselectedcolorSD)
                 }
                 else if ($("#cbf2b1").prop("checked") == true && subactive == 2)
                 {
-                    gjkt.selectAll("rect").style("fill", "black")
+                    gjkt.selectAll("rect").style("fill", unselectedcolor)
                 }
                 var dotrect = projection(d.location);
                 startpoint = [dotrect[0]+5,dotrect[1]+5];
@@ -3466,16 +3499,16 @@
                     {
                         return d.properties.OBJECTID;
                     })
-                    .style("fill", setJavColorSDLBM)
+                    //.style("fill", setJavColorSDLBM)
                     .attr("stroke-width", 2)
                     .each(function(d,i)
                         {
-                            //if (connectionmenu[0] == "Line")
-                            //{
+                            if (connectionmenu[0] == "Line")
+                            {
                                 endpoint[i] = getCentroid(d3.select(this))
-                                //generateCentralDistrict(endpoint[i],gjktFS)
+                                generateCentralDistrict(endpoint[i],gjktFS)
                                 drawlinerectFS(startpoint,endpoint[i],"black")
-                            //}
+                            }
                         });
             }
             else if (filteractive == "filter2" || filteractive == "filter3")
@@ -3485,16 +3518,16 @@
                     {
                         return d.properties.OBJECTID;
                     })
-                    .style("fill", setJavColorSDLBM)
+                    //.style("fill", setJavColorSDLBM)
                     .attr("stroke-width", 2)
                     .each(function(d,i)
                         {
-                            //if (connectionmenu[0] == "Line")
-                            //{
+                            if (connectionmenu[0] == "Line")
+                            {
                                 endpoint[i] = getCentroid(d3.select(this))
-                                //generateCentralDistrict(endpoint[i],gjw)
+                                generateCentralDistrict(endpoint[i],gjw)
                                 drawlineDest2Ori(startpoint,endpoint[i],"black")
-                            //}
+                            }
                         });
             }
                 
@@ -3585,13 +3618,13 @@
                         //generate the circles
                         showCity(result,gjktFS,possd,setJktColorSDLBM, "circle");
 
-                        //if (connectionmenu[0] == "Line" && (collectormenu[0] == "SubDistrict" || collectormenu[1] == "SubDistrict" ))
-                        //{
+                        if (connectionmenu[0] == "Line" && (collectormenu[0] == "SubDistrict" || collectormenu[1] == "SubDistrict" ))
+                        {
                             for (var i = 0; i < possd.length; i++)
                             {
                                 drawlinerectFS(startpoint,possd[i],"red")
                             }
-                        //}
+                        }
                     });
                 }
                 var dataselectedsd = dtsd(destsd);
@@ -3694,11 +3727,11 @@
 
             d3.selectAll("#c_id").remove();
             d3.selectAll("#line_id").remove();
-            //if (connectionmenu[0] == "Line")
-            //{
+            if (connectionmenu[0] == "Line")
+            {
                 startpoint = getCentroid(JVForFilter);
-                //generateCentralDistrict(startpoint,gjw)
-            //}
+                generateCentralDistrict(startpoint,gjw)
+            }
 
             target.select("#daerah").text("Origin : "+JVDvalueForFilter.properties.KAB_KOTA+" - " + JVDvalueForFilter.properties.PROPINSI);
 
@@ -3813,12 +3846,12 @@
                     .attr("stroke-width", 2)
                     .each(function(d,i)
                     {
-                        //if (connectionmenu[0] == "Line")
-                        //{
+                        if (connectionmenu[0] == "Line")
+                        {
                             endpoint[i] = getCentroid(d3.select(this))
-                            //generateCentralDistrict(endpoint[i],gjkt)
+                            generateCentralDistrict(endpoint[i],gjkt)
                             drawlineOri2Dest(startpoint,endpoint[i],"black")
-                        //}
+                        }
                     });
             }
 
@@ -3877,13 +3910,13 @@
                         //generate the circles
                         showCity(result,gjkt,possd,setJktColorSDLBM, "circle");
 
-                        //if (connectionmenu[0] == "Line" && (collectormenu[0] == "SubDistrict" || collectormenu[1] == "SubDistrict" ))
-                        //{
+                        if (connectionmenu[0] == "Line" && (collectormenu[0] == "SubDistrict" || collectormenu[1] == "SubDistrict" ))
+                        {
                             for (var i = 0; i < possd.length; i++)
                             {
                                 drawlineOri2Dest(startpoint,possd[i],"red")
                             }
-                        //}
+                        }
 
                         gjkt.selectAll("circle")
                         .on("click", function(JVDvalueForFilter)
@@ -3893,6 +3926,7 @@
                         })
                         .on("mouseover", function(d)
                         {
+                            d3.select(this).style("fill",hovercolor);
                             var coordinates = proj(d.location);
 
                             target2
@@ -3906,7 +3940,12 @@
                             d3.select("#tooltip2").classed("hidden", false);
 
                         })
-                        .on("mouseout", function(d){d3.select("#tooltip2").classed("hidden", true);});
+                        .on("mouseout", function(d)
+                    {
+                        d3.select("#tooltip2").classed("hidden", true);
+                        d3.selectAll("rect").style("fill",unselectedcolor);
+                        d3.selectAll("circle").style("fill",unselectedcolorSD);
+                    });
                     })
                 };
                 var dataselectedsd = dtsd(destsd);
@@ -3964,14 +4003,14 @@
                         //generate the circles
                         showCity(result,gjkt,poslbm,setJktColorSDLBM, "rect");
 
-                        //if (connectionmenu[0] == "Line" && (collectormenu[0] == "LBM" || collectormenu[1] == "LBM" || collectormenu[2] == "LBM"))
-                        //{
+                        if (connectionmenu[0] == "Line" && (collectormenu[0] == "LBM" || collectormenu[1] == "LBM" || collectormenu[2] == "LBM"))
+                        {
                             for (var i = 0; i < poslbm.length; i++)
                             {
                                 endpoint[i] = [poslbm[i][0]+5,poslbm[i][1]+5]
                                 drawlineOri2Dest(startpoint,endpoint[i],"blue")
                             }
-                        //}
+                        }
 
                         gjkt.selectAll("rect")
                         .on("click", function(JVDvalueForFilter)
@@ -3981,6 +4020,7 @@
                         })
                         .on("mouseover", function(d)
                         {
+                            d3.select(this).style("fill",hovercolor);
                             var coordinates = proj(d.location);
 
                             target2
@@ -3994,7 +4034,12 @@
                             d3.select("#tooltip2").classed("hidden", false);
 
                         })
-                        .on("mouseout", function(d){d3.select("#tooltip2").classed("hidden", true);});
+                        .on("mouseout", function(d)
+                        {
+                            d3.select("#tooltip2").classed("hidden", true);
+                            d3.selectAll("rect").style("fill",unselectedcolor);
+                            d3.selectAll("circle").style("fill",unselectedcolorSD);
+                        });
                     })
                 };
                 var dataselectedlbm = dtlbm(destlbm);
@@ -4010,11 +4055,11 @@
 
             d3.selectAll("#c_id").remove();
             d3.selectAll("#line_id").remove();
-            //if (connectionmenu[0] == "Line")
-            //{
+            if (connectionmenu[0] == "Line")
+            {
                 startpoint = getCentroid(JKTForFilter);
-                //generateCentralDistrict(startpoint,gjkt)
-            //}
+                generateCentralDistrict(startpoint,gjkt)
+            }
 
             target.select("#daerah").text("DESTINATION :"+JKTDvalueForFilter.properties.KAB_KOTA);
 
@@ -4063,12 +4108,12 @@
                 .attr("stroke-width", 2)
                 .each(function(d,i)
                     {
-                        //if (connectionmenu[0] == "Line")
-                        //{
+                        if (connectionmenu[0] == "Line")
+                        {
                             endpoint[i] = getCentroid(d3.select(this))
-                            //generateCentralDistrict(endpoint[i],gjw)
+                            generateCentralDistrict(endpoint[i],gjw)
                             drawlineDest2Ori(startpoint,endpoint[i],"black")
-                        //}
+                        }
                     });
 
 
@@ -4085,11 +4130,11 @@
             d3.selectAll("#c_id").remove();
             d3.selectAll("#line_id").remove();
             gjktFS.selectAll("circle").remove();
-            //if (connectionmenu[0] == "Line")
-            //{
+            if (connectionmenu[0] == "Line")
+            {
                 startpoint = getCentroid(JKTFSForFilter);
-                //generateCentralDistrict(startpoint,gjktFS)
-            //}
+                generateCentralDistrict(startpoint,gjktFS)
+            }
             
 
             target.select("#daerah").text("DESTINATION :"+JKTFSDvalueForFilter.properties.KAB_KOTA);
@@ -4239,13 +4284,13 @@
                         //generate the circles
                         showCity(result,gjktFS,possd,setJktColorSDLBM, "circle");
 
-                        //if (connectionmenu[0] == "Line" && (collectormenu[0] == "SubDistrict" || collectormenu[1] == "SubDistrict" ))
-                        //{
+                        if (connectionmenu[0] == "Line" && (collectormenu[0] == "SubDistrict" || collectormenu[1] == "SubDistrict" ))
+                        {
                             for (var i = 0; i < possd.length; i++)
                             {
                                 drawlinerectFS(startpoint,possd[i],"red")
                             }
-                        //}
+                        }
 
                         gjktFS.selectAll("circle")
                         .on("click", function(JKTFSDvalueForFilter)
@@ -4255,6 +4300,7 @@
                         })
                         .on("mouseover", function(d)
                         {
+                            d3.select(this).style("fill",hovercolor);
                             var coordinates = projectionFS(d.location);
 
                             target2
@@ -4268,7 +4314,12 @@
                             d3.select("#tooltip2").classed("hidden", false);
 
                         })
-                        .on("mouseout", function(d){d3.select("#tooltip2").classed("hidden", true);});
+                        .on("mouseout", function(d)
+                        {
+                            d3.select("#tooltip2").classed("hidden", true);
+                            d3.selectAll("rect").style("fill",unselectedcolor);
+                            d3.selectAll("circle").style("fill",unselectedcolorSD);
+                        });
                     })
                 };
                 var dataselectedsd = dtsd(destsd);
@@ -4342,6 +4393,7 @@
                         })
                         .on("mouseover", function(d)
                         {
+                            d3.select(this).style("fill",hovercolor);
                             var coordinates = proj(d.location);
 
                             target2
@@ -4354,7 +4406,12 @@
                             d3.select("#tooltip2").classed("hidden", false);
 
                         })
-                        .on("mouseout", function(d){d3.select("#tooltip2").classed("hidden", true);});
+                        .on("mouseout", function(d)
+                        {
+                            d3.select("#tooltip2").classed("hidden", true);
+                            d3.selectAll("rect").style("fill",unselectedcolor);
+                            d3.selectAll("circle").style("fill",unselectedcolorSD);
+                        });
                     })
                 };
                 var dataselectedlbm = dtlbm(destlbm);
@@ -4434,7 +4491,7 @@
         d3.json("jakarta.json", function(json) {
             jakFSjson = json;
             FSMapJKT(json);
-            entityextraction("LBM", projectionFS, gjktFS, "black")//setJktColorSDLBM)
+            entityextraction("LBM", projectionFS, gjktFS, unselectedcolor)//setJktColorSDLBM)
             $('#cbf1a1').prop('checked', true);
         });
 
@@ -4456,6 +4513,8 @@
 
         var subactive = 1;
         var filteractive = "filter1";
+        
+        connectionmenu[0] = "Size"
 /****************************************************************************************/
         function initState()
         {
@@ -4723,7 +4782,7 @@
             d3.json("jakarta.json", function(json) {
                 jakFSjson = json;
                 FSMapJKT(json);
-                entityextraction("LBM", projectionFS, gjktFS, "black")//setJktColorSDLBM)
+                entityextraction("LBM", projectionFS, gjktFS, unselectedcolor)//setJktColorSDLBM)
                 //$('#sCYSDinJKT').trigger("click");
             });
             $('#cbf1a1').prop("checked",true)
@@ -4735,7 +4794,7 @@
             $('#sCYSDinJKT').click(function () 
             {
                 initStateWOPath();
-                entityextraction("LBM", projectionFS, gjktFS, "black")//setJktColorSDLBM)
+                entityextraction("LBM", projectionFS, gjktFS, unselectedcolor)//setJktColorSDLBM)
                 $('#cbf1a1').prop('checked', true);
                 subactive = 1;
             });
@@ -4745,7 +4804,7 @@
                 {
                     initStateWOPath();
                     $('#cbf1a1').prop('checked', true);
-                    entityextraction("LBM", projectionFS, gjktFS, "black")
+                    entityextraction("LBM", projectionFS, gjktFS, unselectedcolor)
                 });
             
                 //filter1sub1rb2
@@ -4753,7 +4812,7 @@
                 {
                     initStateWOPath();
                     $('#cbf1a2').prop('checked', true);
-                    subdistrictextraction("LBM", projectionFS, gjktFS, "black")
+                    subdistrictextraction("LBM", projectionFS, gjktFS, unselectedcolorSD)
                 });
             
                 //filter1sub1rb3
@@ -4767,7 +4826,7 @@
             $('#sLBMinJKT').click(function () 
             {
                 initStateWOPath();
-                entityextraction("CY", projectionFS, gjktFS, "blue")
+                entityextraction("CY", projectionFS, gjktFS, unselectedcolorSD)
                 $('#cbf1b1').prop('checked', true);
                 subactive = 2;
             });
@@ -4777,7 +4836,7 @@
                 {
                     initStateWOPath();
                     $('#cbf1b1').prop('checked', true);
-                    entityextraction("CY", projectionFS, gjktFS, "blue")
+                    entityextraction("CY", projectionFS, gjktFS, unselectedcolorSD)
                 });
             
                 //filter1sub2rb2
@@ -4785,7 +4844,7 @@
                 {
                     initStateWOPath();
                     $('#cbf1b2').prop('checked', true);
-                    subdistrictextraction("CY", projectionFS, gjktFS, "blue")
+                    subdistrictextraction("CY", projectionFS, gjktFS, unselectedcolorSD)
                 });
             
                 //filter1sub2rb3
@@ -4808,7 +4867,7 @@
             d3.json("jakarta.json", function(json) {
                 jakjson = json;
                 updateMapJKT(json);
-                entityextraction("CY", projection, gjkt, "blue")//setJktColorSDLBM)
+                entityextraction("CY", projection, gjkt, unselectedcolorSD)//setJktColorSDLBM)
                 //$('#sCYSDinJKTJV').trigger("click");
             });
 
@@ -4826,7 +4885,7 @@
             $('#sCYSDinJKTJV').click(function () 
             {
                 initStateWOPath();
-                entityextraction("CY", projection, gjkt, "blue")//setJktColorSDLBM)
+                entityextraction("CY", projection, gjkt, unselectedcolorSD)//setJktColorSDLBM)
                 $('#cbf2a1').prop('checked', true);
                 subactive = 1;
             });
@@ -4836,7 +4895,7 @@
                 {
                     initStateWOPath();
                     $('#cbf2a1').prop("checked",true)
-                    entityextraction("CY", projection, gjkt, "blue")
+                    entityextraction("CY", projection, gjkt, unselectedcolorSD)
                 });
             
                 //filter1sub1rb2
@@ -4844,7 +4903,7 @@
                 {
                     initStateWOPath();
                     $('#cbf2a2').prop("checked",true)
-                    subdistrictextraction("CY", projection, gjkt, "blue")
+                    subdistrictextraction("CY", projection, gjkt, unselectedcolorSD)
                 });
             
                 //filter1sub1rb3
@@ -4858,7 +4917,7 @@
             $('#sLBMinJKTJV').click(function () 
             {
                 initStateWOPath();
-                entityextraction("LBM", projection, gjkt, "black")
+                entityextraction("LBM", projection, gjkt, unselectedcolor)
                 $('#cbf2b1').prop('checked', true);
                 subactive = 2;
             });
@@ -4868,7 +4927,7 @@
                 {
                     initStateWOPath();
                     $('#cbf2b1').prop('checked', true);
-                    entityextraction("LBM", projection, gjkt, "black")
+                    entityextraction("LBM", projection, gjkt, unselectedcolor)
                 });
             
                 //filter1sub2rb2
@@ -4876,7 +4935,7 @@
                 {
                     initStateWOPath();
                     $('#cbf2b2').prop('checked', true);
-                    subdistrictextraction("LBM", projection, gjkt, "black")
+                    subdistrictextraction("LBM", projection, gjkt, unselectedcolorSD)
                 });
             
                 //filter1sub2rb3
